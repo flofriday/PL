@@ -3,7 +3,8 @@ Our solution for Programming Languages at TU Wien 2023.
 
 ## Calculator
 
-[Assignment1](https://tuwel.tuwien.ac.at/pluginfile.php/3542105/mod_folder/content/0/aufgabe1.pdf)
+The calculator for [assignment1](https://tuwel.tuwien.ac.at/pluginfile.php/3542105/mod_folder/content/0/aufgabe1.pdf)
+is written in [Rust](https://www.rust-lang.org/) and has no other dependencies.
 
 ### Build and run
 
