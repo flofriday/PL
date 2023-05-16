@@ -6,8 +6,14 @@ pub struct DataStack {
 }
 
 impl DataStack {
+    /// Create a new empty datastack
     pub fn new() -> DataStack {
         DataStack { values: vec![] }
+    }
+
+    /// Pop the top value (if not empty)
+    pub fn len(&mut self) -> usize {
+        self.values.len()
     }
 
     /// Push a new value on the stack
