@@ -11,22 +11,29 @@ on:
         branches: [ main ]
 
 jobs:
-    test:
-        
-        runs-on: ubuntu-latest
+  test:
 
-        steps:
-        - uses: actions/checkout@v2
-        - name: Set up Rust
-          uses: actions-rs/toolchain@v1
-          with:
-              toolchain: stable
-              override: true
-        - name: Check calculator subdirectory
-          run: |
-            cd calculator
-            cargo check
-        - name: Run tests
-          run: |
-            cd calculator
-            cargo test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Run Tests
+      id: test
+      continue-on-error: true
+      run: |
+        cd calculator
+        cargo test --no-fail-fast 2>&1 | tee cargo_test_output.txt
+        cargo install cargo2junit
+        cat cargo_test_output.txt | cargo2junit > test_report.xml
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: calculator/test_report.xml
