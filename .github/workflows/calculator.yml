@@ -28,9 +28,8 @@ jobs:
       continue-on-error: true
       run: |
         cd calculator
-        cargo test --no-fail-fast 2>&1 | tee cargo_test_output.txt
         cargo install cargo2junit
-        cat cargo_test_output.txt | cargo2junit > test_report.xml
+        cargo test -- -Z unstable-options --format json --report-time | cargo2junit > test_report.xml
 
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
