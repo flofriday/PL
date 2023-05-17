@@ -97,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Trying to read non exisiting register")]
+    #[should_panic(expected = "Trying to read non-existing register")]
     fn test_read_non_existent_register() {
         let register_set = RegisterSet::new("initial_commands");
         register_set.read('1');
@@ -111,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Trying to write non exisiting register")]
+    #[should_panic(expected = "Trying to write non-existing register")]
     fn test_write_non_existent_register() {
         let mut register_set = RegisterSet::new("initial_commands");
         register_set.write('1', Value::Integer(10));
