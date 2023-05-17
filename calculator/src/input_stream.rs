@@ -136,15 +136,6 @@ mod tests {
     use std::io::Cursor;
 
     #[test]
-    fn test_failing() {
-        let input_data = "123.45\n";
-        let reader = io::BufReader::new(Cursor::new(input_data));
-        let mut input_stream = InputStream::from(reader);
-
-        assert_eq!(input_stream.load_line().unwrap(), Value::Float(000.456));
-    }
-
-    #[test]
     fn test_load_line_integer() {
         let input_data = "123\n";
         let reader = io::BufReader::new(Cursor::new(input_data));

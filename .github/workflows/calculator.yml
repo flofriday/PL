@@ -4,7 +4,7 @@ on:
     push:
         paths:
             - 'calculator/**'
-        branches: [ main, streams ]
+            - '.github/workflows/calculator.yml'
     pull_request:
         paths:
             - 'calculator/**'
@@ -23,17 +23,11 @@ jobs:
       with:
         toolchain: stable
         override: true
-
-    - name: Run Tests
-      id: test
-      continue-on-error: true
+    - name: Check calculator subdirectory
       run: |
         cd calculator
-        cargo install cargo2junit
-        cargo test -- -Z unstable-options --format json --report-time | cargo2junit > test_report.xml
-
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v1
-      if: always()
-      with:
-        files: calculator/test_report.xml
+        cargo check
+    - name: Run tests
+      run: |
+        cd calculator
+        cargo test
