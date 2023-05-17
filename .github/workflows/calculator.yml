@@ -8,6 +8,7 @@ on:
     pull_request:
         paths:
             - 'calculator/**'
+            - '.github/workflows/calculator.yml'
         branches: [ main ]
 
 jobs:
