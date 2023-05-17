@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn peek_does_not_advance_stream() {
-        let mut cmd_stream = CmdStream::new("abc");
+        let cmd_stream = CmdStream::new("abc");
         assert_eq!(cmd_stream.peek(), Some('a'));
         assert_eq!(cmd_stream.peek(), Some('a')); // peeking again does not advance the stream
     }
