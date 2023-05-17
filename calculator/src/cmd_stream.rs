@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 /// `CmdStream` represents a stream of command characters.
 ///
-/// It maintains an internal vector of commands and a position marker.
+/// It maintains an internal vector of commands.
 /// Commands can be added to the stream and then read from it sequentially.
 ///
 /// # Examples
