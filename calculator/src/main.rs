@@ -1,8 +1,11 @@
 mod cmd_stream;
 mod input_stream;
+mod out_stream;
 mod value;
 
-use crate::{cmd_stream::CmdStream, input_stream::InputStream, value::Value};
+use crate::{
+    cmd_stream::CmdStream, input_stream::InputStream, out_stream::OutputStream, value::Value,
+};
 
 fn main() {
     let i = Value::Integer(3);
@@ -24,5 +27,9 @@ fn main() {
         cmd_stream.poll()
     };
     println!("First command is {v2:?}, second is {v1:?}");
-    cmd_stream.append("add new commands")
+    cmd_stream.append("add new commands");
+
+    let mut out_stream = OutputStream::new();
+    out_stream.write(&f).expect("Couldn't write to out_stream");
+    println!(" <- wrote to stream")
 }
