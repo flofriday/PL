@@ -1,3 +1,4 @@
+mod calculator;
 mod cmd_stream;
 mod input_stream;
 mod out_stream;
