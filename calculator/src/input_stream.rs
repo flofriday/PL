@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_failing() {
-        let input_data = "123.456\n";
+        let input_data = "123.45\n";
         let reader = io::BufReader::new(Cursor::new(input_data));
         let mut input_stream = InputStream::from(reader);
 
