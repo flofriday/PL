@@ -55,7 +55,7 @@ impl RegisterSet {
     pub fn read(&self, register: char) -> Option<&Value> {
         if 'a' > register || 'z' < register {
             // panic as program is screwed
-            panic!("ReadSet::read - Trying to read non exisiting register '{register}'")
+            panic!("ReadSet::read - Trying to read non-existing register '{register}'")
         }
         self.registers.get(&register)
     }
@@ -77,7 +77,7 @@ impl RegisterSet {
     pub fn write(&mut self, register: char, value: Value) {
         if 'a' > register || 'z' < register {
             // panic as program is screwed
-            panic!("ReadSet::write - Trying to write non exisiting register '{register}'")
+            panic!("ReadSet::write - Trying to write non-existing register '{register}'")
         }
         self.registers.insert(register, value);
     }
