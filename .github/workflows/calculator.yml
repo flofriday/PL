@@ -1,0 +1,33 @@
+name: Calculator
+
+on:
+    push:
+        paths:
+            - 'calculator/**'
+            - '.github/workflows/calculator.yml'
+    pull_request:
+        paths:
+            - 'calculator/**'
+            - '.github/workflows/calculator.yml'
+        branches: [ main ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Check calculator subdirectory
+      run: |
+        cd calculator
+        cargo check
+    - name: Run tests
+      run: |
+        cd calculator
+        cargo test
