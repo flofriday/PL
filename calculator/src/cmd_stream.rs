@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 /// `CmdStream` represents a stream of command characters.
 ///
 /// It maintains an internal vector of commands and a position marker.
@@ -17,8 +19,7 @@
 /// assert_eq!(cmd_stream.poll(), 'd');
 /// ```
 pub struct CmdStream {
-    commands: Vec<char>,
-    position: usize,
+    commands: VecDeque<char>,
 }
 
 impl CmdStream {
@@ -32,7 +33,6 @@ impl CmdStream {
     pub fn new(initial_commands: &str) -> Self {
         Self {
             commands: initial_commands.chars().collect(),
-            position: 0,
         }
     }
 
@@ -45,12 +45,28 @@ impl CmdStream {
     /// cmd_stream.append("de");
     /// ```
     pub fn append(&mut self, commands: &str) {
+        // O(n)
         self.commands.extend(commands.chars());
     }
 
-    /// Returns the next command in the stream and advances the position marker.
+    /// Prepands new commands to the begin of the stream.
     ///
-    /// If the position marker is at the end of the stream, it returns `None` and does not advance the position marker.
+    /// # Examples
+    ///
+    /// ```
+    /// let mut cmd_stream = CmdStream::new("abc");
+    /// cmd_stream.prepend("de");
+    /// ```
+    pub fn prepend(&mut self, commands: &str) {
+        // O(n)
+        self.commands.extend(commands.chars());
+        // O(1)
+        self.commands.rotate_right(commands.len())
+    }
+
+    /// Returns the next command without removing it from the stream.
+    ///
+    /// If there is no command in the stream, it returns None.
     ///
     /// # Examples
     ///
@@ -62,12 +78,12 @@ impl CmdStream {
     /// assert_eq!(cmd_stream.poll(), None); // end of stream
     /// ```
     pub fn peek(&self) -> Option<char> {
-        self.commands.get(self.position).copied()
+        self.commands.front().copied()
     }
 
-    /// Returns the next command in the stream and advances the position marker.
+    /// Returns the next command and removes it from the stream.
     ///
-    /// If the position marker is at the end of the stream, it returns the null character (`'\0'`) and does not advance the position marker.
+    /// If there is no command in the stream, it returns None.
     ///
     /// # Examples
     ///
@@ -77,13 +93,7 @@ impl CmdStream {
     /// assert_eq!(cmd_stream.poll(), 'b');
     /// ```
     pub fn poll(&mut self) -> Option<char> {
-        if self.position < self.commands.len() {
-            let ch = self.commands[self.position];
-            self.position += 1;
-            Some(ch)
-        } else {
-            None
-        }
+        self.commands.pop_front()
     }
 }
 
@@ -105,6 +115,34 @@ mod tests {
         cmd_stream.poll(); // remove 'b'
         cmd_stream.poll(); // remove 'c'
         assert_eq!(cmd_stream.peek(), Some('d'));
+    }
+
+    #[test]
+    fn prepend_empty_string() {
+        let mut stream = CmdStream::new("abc");
+        stream.prepend("");
+        assert_eq!(stream.commands, vec!['a', 'b', 'c']);
+    }
+
+    #[test]
+    fn prepend_single_char() {
+        let mut stream = CmdStream::new("abc");
+        stream.prepend("d");
+        assert_eq!(stream.commands, vec!['d', 'a', 'b', 'c']);
+    }
+
+    #[test]
+    fn prepend_multiple_chars() {
+        let mut stream = CmdStream::new("abc");
+        stream.prepend("de");
+        assert_eq!(stream.commands, vec!['d', 'e', 'a', 'b', 'c']);
+    }
+
+    #[test]
+    fn prepend_with_existing_chars() {
+        let mut stream = CmdStream::new("abc");
+        stream.prepend("abc");
+        assert_eq!(stream.commands, vec!['a', 'b', 'c', 'a', 'b', 'c']);
     }
 
     #[test]
