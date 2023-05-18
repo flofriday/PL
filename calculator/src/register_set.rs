@@ -30,6 +30,13 @@ impl RegisterSet {
     /// ```
     pub fn new(initial_commands: &str) -> Self {
         let mut registers = HashMap::new();
+
+        for c in 'a'..='z' {
+            // initialize with emtpy string
+            registers.insert(c, Value::String(String::new()));
+        }
+
+        // write initial command in register a
         registers.insert('a', Value::String(initial_commands.into()));
 
         Self { registers }
@@ -41,23 +48,18 @@ impl RegisterSet {
     ///
     /// * `register` - A character that represents the register to read.
     ///
-    /// # Returns
-    ///
-    /// * `Some(&Value)` if the register contains a value.
-    /// * `None` if the register does not exist.
-    ///
     /// # Example
     ///
     /// ```
     /// let registers = RegisterSet::new("initial command string");
-    /// assert_eq!(registers.read('a'), Some(&Value::String(String::from("initial command string"))));
+    /// assert_eq!(registers.read('a'), &Value::String(String::from("initial command string")));
     /// ```
-    pub fn read(&self, register: char) -> Option<&Value> {
+    pub fn read(&self, register: char) -> &Value {
         if 'a' > register || 'z' < register {
             // panic as program is screwed
             panic!("ReadSet::read - Trying to read non-existing register '{register}'")
         }
-        self.registers.get(&register)
+        self.registers.get(&register).unwrap()
     }
 
     /// Writes a value to a specific register.
@@ -92,7 +94,7 @@ mod tests {
         let register_set = RegisterSet::new("initial_commands");
         assert_eq!(
             register_set.read('a'),
-            Some(&Value::String("initial_commands".to_string()))
+            &Value::String("initial_commands".to_string())
         );
     }
 
@@ -107,7 +109,7 @@ mod tests {
     fn test_write_read() {
         let mut register_set = RegisterSet::new("initial_commands");
         register_set.write('b', Value::Integer(10));
-        assert_eq!(register_set.read('b'), Some(&Value::Integer(10)));
+        assert_eq!(register_set.read('b'), &Value::Integer(10));
     }
 
     #[test]
@@ -121,17 +123,14 @@ mod tests {
     fn test_write_read_float() {
         let mut register_set = RegisterSet::new("initial_commands");
         register_set.write('c', Value::Float(1.23));
-        assert_eq!(register_set.read('c'), Some(&Value::Float(1.23)));
+        assert_eq!(register_set.read('c'), &Value::Float(1.23));
     }
 
     #[test]
     fn test_write_read_string() {
         let mut register_set = RegisterSet::new("initial_commands");
         register_set.write('d', Value::String("hello".to_string()));
-        assert_eq!(
-            register_set.read('d'),
-            Some(&Value::String("hello".to_string()))
-        );
+        assert_eq!(register_set.read('d'), &Value::String("hello".to_string()));
     }
 
     #[test]
@@ -139,6 +138,6 @@ mod tests {
         let mut register_set = RegisterSet::new("initial_commands");
         register_set.write('e', Value::Integer(1));
         register_set.write('e', Value::Integer(2));
-        assert_eq!(register_set.read('e'), Some(&Value::Integer(2)));
+        assert_eq!(register_set.read('e'), &Value::Integer(2));
     }
 }
