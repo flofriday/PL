@@ -1,7 +1,9 @@
 mod calculator;
+mod calculator_context;
 mod cmd_stream;
 mod datastack;
 mod input_stream;
+mod operations;
 mod out_stream;
 mod register_set;
 mod value;
