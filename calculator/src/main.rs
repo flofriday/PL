@@ -1,4 +1,5 @@
 mod calculator;
+mod register_set;
 mod cmd_stream;
 mod datastack;
 mod input_stream;
