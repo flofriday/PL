@@ -37,3 +37,14 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_print_integer() {
+        let mut calculator = Calculator::new("123\"");
+        calculator.run();
+    }
+}
