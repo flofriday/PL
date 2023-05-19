@@ -5,7 +5,7 @@ use crate::{
     out_stream::OutputStream, register_set::RegisterSet, value::Value,
 };
 
-struct Calculator<IN: Read, OUT: Write> {
+pub struct Calculator<IN: Read, OUT: Write> {
     operation_mode: i8,
 
     // memory
@@ -40,13 +40,13 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
             match self.operation_mode {
                 ..=-2 => self.decimal_place_construction(cmd), // decimal place construction
                 -1 => self.integer_construction(cmd),          // integer construction
-                0 => (),                                       // execution
-                _ => (),                                       // string construction
+                0 => self.execute(cmd),                        // execution
+                _ => self.string_construction(cmd),            // string construction
             }
         }
     }
 
-    pub fn integer_construction(&mut self, cmd: char) {
+    fn integer_construction(&mut self, cmd: char) {
         assert_eq!(self.operation_mode, -1, "Wrong operation mode");
 
         match cmd {
@@ -80,7 +80,7 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         }
     }
 
-    pub fn decimal_place_construction(&mut self, cmd: char) {
+    fn decimal_place_construction(&mut self, cmd: char) {
         assert!(self.operation_mode < -1, "Wrong operation mode");
 
         match cmd {
@@ -111,7 +111,7 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         }
     }
 
-    pub fn string_construction(&mut self, cmd: char) {
+    fn string_construction(&mut self, cmd: char) {
         let op_mode = self.operation_mode;
         assert!(self.operation_mode >= 1, "Wrong operation mode {op_mode}");
 
@@ -145,6 +145,101 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
 
         // consume character
         self.cmd_stream.poll();
+    }
+
+    fn execute(&mut self, cmd: char) {
+        assert_eq!(self.operation_mode, 0, "Wrong construction mode");
+
+        match cmd {
+            '0'..='9' => self.op_digit(cmd),
+            '.' => self.op_dot(cmd),
+            '(' => self.op_open_bracket(cmd),
+            'a'..='z' => self.op_lower_letter(cmd),
+            'A'..='Z' => self.op_upper_letter(cmd),
+            '=' | '<' | '>' => self.op_comparison(cmd),
+            '+' | '-' | '*' | '/' | '%' => self.op_arithmetic(cmd),
+            '&' | '|' => self.op_logic(cmd),
+            '_' => self.op_null_check(cmd),
+            '~' => self.op_negation(cmd),
+            '?' => self.op_int_conversion(cmd),
+            '!' => self.op_copy(cmd),
+            '$' => self.op_delete(cmd),
+            '@' => self.op_apply_imm(cmd),
+            '\\' => self.op_apply_later(cmd),
+            '#' => self.op_stack_size(cmd),
+            '\'' => self.op_read_input(cmd),
+            '"' => self.op_write_output(cmd),
+            invalid => panic!("RUNTIME ERROR: Invalid command character '{invalid}'"),
+        }
+    }
+}
+
+// implementation for execution mode operations
+impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
+    fn op_digit(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_dot(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_open_bracket(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_lower_letter(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_upper_letter(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_comparison(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_arithmetic(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_logic(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_null_check(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_negation(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_int_conversion(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_copy(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_delete(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_apply_imm(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_apply_later(&mut self, cmd: char) {
+        todo!()
+    }
+    fn op_stack_size(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_read_input(&mut self, cmd: char) {
+        todo!()
+    }
+
+    fn op_write_output(&mut self, cmd: char) {
+        todo!()
     }
 }
 

@@ -1,9 +1,9 @@
 mod calculator;
-mod register_set;
 mod cmd_stream;
 mod datastack;
 mod input_stream;
 mod out_stream;
+mod register_set;
 mod value;
 
 use crate::{
