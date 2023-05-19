@@ -2,7 +2,7 @@ use std::io::{self, BufReader, Read, Write};
 
 use crate::{
     cmd_stream::CmdStream, datastack::DataStack, input_stream::InputStream,
-    out_stream::OutputStream, value::Value,
+    out_stream::OutputStream, register_set::RegisterSet, value::Value,
 };
 
 struct Calculator<IN: Read, OUT: Write> {
@@ -10,7 +10,7 @@ struct Calculator<IN: Read, OUT: Write> {
 
     // memory
     stack: DataStack,
-    // TODO: Add `registers: RegisterSet,`
+    registers: RegisterSet,
 
     // streams
     out_stream: OutputStream<OUT>,
@@ -22,7 +22,10 @@ impl Calculator<io::Stdin, io::Stdout> {
     pub fn new(program: &str) -> Self {
         Self {
             operation_mode: 0,
+
             stack: DataStack::new(),
+            registers: RegisterSet::new(program),
+
             out_stream: OutputStream::new(),
             in_stream: InputStream::new(),
             cmd_stream: CmdStream::new(program),
@@ -69,6 +72,8 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
             }
         }
     }
+
+    pub fn decimal_place_construction(&mut self, cmd: char) {}
 }
 
 #[cfg(test)]
@@ -88,7 +93,10 @@ mod tests {
 
         Calculator {
             operation_mode: op_mode,
+
             stack: DataStack::new(),
+            registers: RegisterSet::new(init_prog),
+
             out_stream: output,
             in_stream: input_stream,
             cmd_stream: CmdStream::new(init_prog),
@@ -97,7 +105,11 @@ mod tests {
 
     #[test]
     fn test_integer_construction() {
-        let mut calc = new_calc("123", 1);
+        // checks if the integer_construction method
+        // correctly constructs integer from cmd stream
+        // consumes literals
+
+        let mut calc = new_calc("123", -1);
 
         // prepare stack
         calc.stack.push(Value::Integer(0));
@@ -105,12 +117,14 @@ mod tests {
 
         assert_eq!(calc.cmd_stream.peek(), Some('2'), "Didn't consume command");
         assert_eq!(calc.stack.pop_int(), Some(1), "Didn't update top of stack");
+        assert_eq!(calc.operation_mode, -1, "Did change operation mode");
 
         calc.stack.push(Value::Integer(1));
         calc.integer_construction('2');
 
         assert_eq!(calc.cmd_stream.peek(), Some('3'), "Didn't consume command");
         assert_eq!(calc.stack.pop_int(), Some(12), "Didn't update top of stack");
+        assert_eq!(calc.operation_mode, -1, "Did change operation mode");
 
         calc.stack.push(Value::Integer(12));
         calc.integer_construction('3');
@@ -121,15 +135,69 @@ mod tests {
             Some(123),
             "Didn't update top of stack"
         );
+        assert_eq!(calc.operation_mode, -1, "Did change operation mode");
     }
 
     #[test]
     #[should_panic]
     fn test_integer_construction_should_panic() {
-        let mut calc = new_calc("123", 1);
+        // checks if the integer_construction method
+        // crashes if top of stack is not a integer
+
+        let mut calc = new_calc("123", -1);
 
         // prepare stack
         calc.stack.push(Value::String(String::new()));
         calc.integer_construction('1');
+    }
+
+    #[test]
+    fn test_integer_construction_opmode_normal() {
+        // checks if the integer_construction method
+        // switches op mode to execution mode (0)
+        // and does not consume last cmd before switching
+
+        let mut calc = new_calc("1a", -1);
+
+        // prepare stack
+        calc.stack.push(Value::Integer(0));
+
+        calc.integer_construction('1');
+
+        assert_eq!(calc.cmd_stream.peek(), Some('a'), "Didn't consume command");
+        assert_eq!(calc.stack.pop_int(), Some(1), "Didn't update top of stack");
+        assert_eq!(calc.operation_mode, -1, "Did change operation mode");
+
+        calc.stack.push(Value::Integer(1));
+        calc.integer_construction('a');
+
+        assert_eq!(calc.cmd_stream.peek(), Some('a'), "Did consume command");
+        assert_eq!(calc.stack.pop_int(), Some(1), "Did update stack");
+        assert_eq!(calc.operation_mode, 0, "Didn't change operation mode");
+    }
+
+    #[test]
+    fn test_integer_construction_opmode_float() {
+        // checks if the integer_construction method
+        // switch op mode to floating point construction (-2)
+        // and consumes the `.`
+
+        let mut calc = new_calc("1.", -1);
+
+        // prepare stack
+        calc.stack.push(Value::Integer(0));
+
+        calc.integer_construction('1');
+
+        assert_eq!(calc.cmd_stream.peek(), Some('.'), "Didn't consume command");
+        assert_eq!(calc.stack.pop_int(), Some(1), "Didn't update top of stack");
+        assert_eq!(calc.operation_mode, -1, "Did change operation mode");
+
+        calc.stack.push(Value::Integer(1));
+        calc.integer_construction('.');
+
+        assert_eq!(calc.cmd_stream.peek(), None, "Didn't consume command");
+        assert_eq!(calc.stack.pop_int(), Some(1), "Did update stack");
+        assert_eq!(calc.operation_mode, -2, "Didn't change operation mode");
     }
 }
