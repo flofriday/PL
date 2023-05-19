@@ -35,6 +35,7 @@ impl Calculator<io::Stdin, io::Stdout> {
 
 impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
     pub fn run(&mut self) {
+        // peeks command, it is actually consumed by repective op mode handlers
         while let Some(cmd) = self.cmd_stream.peek() {
             match self.operation_mode {
                 ..=-2 => self.decimal_place_construction(cmd), // decimal place construction
@@ -87,6 +88,7 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
                 let digit = cmd.to_digit(10).unwrap() as f64;
 
                 // construct extended floating point
+                // TODO: Probably better runtime exception handling, with more context
                 let stack_top = self.stack.pop_float().expect(
                     "RUNTIME ERROR: Tried to construct decimal places, but top of stack isn't float",
                 );
@@ -107,6 +109,42 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
             }
             _ => self.operation_mode = 0, // just switch to execution mode
         }
+    }
+
+    pub fn string_construction(&mut self, cmd: char) {
+        let op_mode = self.operation_mode;
+        assert!(self.operation_mode >= 1, "Wrong operation mode {op_mode}");
+
+        let mut stack_top = self
+            .stack
+            .pop_string()
+            .expect("RUNTIME ERROR: Tried to construct string, but top of stack isn't string");
+
+        match cmd {
+            '(' => {
+                // add `(` to string
+                stack_top.push('(');
+                // push manipulated string to stack
+                self.stack.push(Value::String(stack_top));
+                self.operation_mode += 1;
+            }
+            ')' => {
+                // if m > 1 append `)` to string
+                if self.operation_mode > 1 {
+                    stack_top.push(')')
+                }
+                // push manipulated string to stack
+                self.stack.push(Value::String(stack_top));
+                self.operation_mode -= 1;
+            }
+            c => {
+                stack_top.push(c);
+                self.stack.push(Value::String(stack_top));
+            }
+        }
+
+        // consume character
+        self.cmd_stream.poll();
     }
 }
 
@@ -372,5 +410,87 @@ mod tests {
         assert_eq!(calc.stack.pop_float(), Some(1.0), "Updated top of stack");
         assert_eq!(calc.stack.pop(), None, "Changed stack below top");
         assert_eq!(calc.operation_mode, 0, "Didn't change operation mode to 0");
+    }
+
+    #[test]
+    fn test_string_construction() {
+        // checks if the string_construction method
+        // correctly constructs string on stack
+        //
+        // cmd: `a)`
+        // top: `a`
+
+        // `(` is already consumed
+        let mut calc = new_calc("a)", 1);
+
+        // prepare stack -> skip execution mode part
+        calc.stack.push(Value::String(String::new()));
+        calc.string_construction('a');
+
+        assert_eq!(calc.cmd_stream.peek(), Some(')'), "Didn't consume cmd");
+        assert_eq!(
+            calc.stack.pop_string(),
+            Some("a".to_string()),
+            "Didn't append string by 'a'"
+        );
+        assert_eq!(calc.operation_mode, 1, "Didn't leave operation mode at 1");
+
+        calc.stack.push(Value::String("a".to_string()));
+        calc.string_construction(')');
+
+        assert_eq!(calc.cmd_stream.peek(), None, "Didn't consume cmd");
+        assert_eq!(
+            calc.stack.pop_string(),
+            Some("a".to_string()),
+            "Didn't end string correctly"
+        );
+        assert_eq!(calc.operation_mode, 0, "Didn't change operation mode to 0");
+    }
+
+    #[test]
+    fn test_string_construction_nested() {
+        // checks if the string_construction method
+        // correctly constructs nested string on stack
+        //
+        // cmd: `())`
+        // top: `()`
+
+        // `(` is already consumed
+        let mut calc = new_calc("())", 1);
+
+        // prepare stack -> skip execution mode part
+        calc.stack.push(Value::String(String::new()));
+        calc.string_construction('(');
+
+        assert_eq!(calc.cmd_stream.peek(), Some(')'), "Didn't consume cmd");
+        assert_eq!(
+            calc.stack.pop_string(),
+            Some("(".to_string()),
+            "Didn't append string by '('"
+        );
+        assert_eq!(calc.operation_mode, 2, "Didn't change operation mode to 2");
+
+        calc.stack.push(Value::String("(".to_string()));
+        calc.string_construction(')');
+
+        assert_eq!(calc.cmd_stream.peek(), Some(')'), "Didn't consume cmd");
+        assert_eq!(
+            calc.stack.pop_string(),
+            Some("()".to_string()),
+            "Didn't construct string correctly"
+        );
+        assert_eq!(calc.operation_mode, 1, "Didn't change operation mode to 1");
+
+        calc.stack.push(Value::String("()".to_string()));
+        calc.string_construction(')');
+
+        assert_eq!(calc.cmd_stream.peek(), None, "Didn't consume cmd");
+        assert_eq!(
+            calc.stack.pop_string(),
+            Some("()".to_string()),
+            "Didn't end string correctly"
+        );
+        assert_eq!(calc.operation_mode, 0, "Didn't change operation mode to 0");
+        assert_eq!(calc.stack.pop(), None, "Did change stack below top");
     }
 }
