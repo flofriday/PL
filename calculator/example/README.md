@@ -27,3 +27,21 @@ This is taken from the "Example" section of the assignment.
 
 This example computes the factorial of three and was taken from the appendix of 
 the example.
+
+## infiniteloop.txt
+
+**Output:** 1 2 3 ...
+
+This is a simple example that counts up in an infinite loop. Since there are no
+structured loops this code uses the apply immediate operation to modify its 
+own source code.
+
+### Explanation
+`("1+2!@) 1 2! @`
+
+First is a string, but since it uses some kind of recursion, lets ignore that
+one. Next we push 1 on the stack. With `2!` we copy the string onto the top of 
+the stack and with and `@` we pop it and move it to the execution stream.
+
+When executing the string, we print the counter with `"`, increment it by one 
+with `1+` and than load and execute the string again with `2!@`.
