@@ -233,6 +233,7 @@ fn op_null_check<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>,
     context.stack().push(Integer(is_null as i64));
     context.cmd_stream().poll();
 }
+
 fn op_negation<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
     use Value::*;
     let val = context
@@ -263,16 +264,26 @@ fn op_int_conversion<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, O
 }
 
 fn op_copy<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
-    let Some(Integer(val)) = context.stack().pop() else { return };
-    let Some(nth) = context.stack().nth((val - 1) as usize) else { return };
+    let nth = context.stack().pop_int();
+    if nth.is_none() {
+        context.cmd_stream().poll();
+        return;
+    };
 
-    let elem = nth.clone();
-    context.stack().push(elem);
+    let nth = nth.unwrap() as usize;
+    let elem = context.stack().peek_at(nth);
+
+    if let Some(v) = elem {
+        context.stack().push(v);
+    }
+
     context.cmd_stream().poll();
 }
-fn op_delete<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
 
+fn op_delete<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
+    !todo!()
 }
+
 fn op_apply_imm<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
     todo!()
 }
@@ -295,9 +306,9 @@ fn op_write_output<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::io;
     use std::io::Cursor;
-    use super::*;
     use Value::*;
 
     fn init_ctx(init_prog: &str, op_mode: i8) -> CalculatorContext<Cursor<&str>, Cursor<Vec<u8>>> {

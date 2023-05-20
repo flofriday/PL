@@ -45,3 +45,25 @@ the stack and with and `@` we pop it and move it to the execution stream.
 
 When executing the string, we print the counter with `"`, increment it by one 
 with `1+` and than load and execute the string again with `2!@`.
+
+### ifelse.txt
+
+This program asks the user for their age and tells them if they are old enough
+to enter.
+
+### Explaination
+```
+((Old enough)") T  
+((Too young)") F
+(Enter your age:)"
+f t ' 17 >  1+ ! @
+```
+
+In the first two lines we define two "functions" for the true and false case.
+The third line prompts the user for their age.
+The last line first pushes the functions onto the stack. Then it reads the user
+input and compares it to 17 so that adult persons result in the following stack:
+`[ F | T | 1 ]` and now we add one to the one and therefore delete the false 
+function from the stack and therefore only the true function is on the stack 
+which we execute with `@`. If the condition is false we delete the true function
+and execute the wrong case. 
