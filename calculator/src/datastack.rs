@@ -63,6 +63,12 @@ impl DataStack {
             None
         }
     }
+
+    /// Returns the reference to the nth (from top) value on the stack, if exists.
+    pub fn nth(&self, n: usize) -> Option<&Value> {
+        let len = self.values.len();
+        self.values.get(len - 1 - n)
+    }
 }
 
 impl fmt::Display for DataStack {

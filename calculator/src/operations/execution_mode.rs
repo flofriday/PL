@@ -1,6 +1,12 @@
 use std::io::{Read, Write};
 
+use crate::value::Value::Integer;
 use crate::{calculator_context::CalculatorContext, value::Value};
+
+pub mod constants {
+    // comparison constant
+    pub const EPSILON: f64 = 1e-10;
+}
 
 pub fn execute<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
     assert_eq!(context.op_mode(), 0, "Wrong construction mode");
@@ -72,33 +78,200 @@ fn op_upper_letter<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT
     context.cmd_stream().poll();
 }
 
-fn op_comparison<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+fn op_comparison<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, operator: char) {
+    let rhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+    let lhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let cmp_result = cmp_vals(lhs, rhs);
+    let stack_result = match operator {
+        '<' => (cmp_result == -1) as i32,
+        '=' => (cmp_result == 0) as i32,
+        '>' => (cmp_result == 1) as i32,
+        _ => panic!("Invalid comparison operator"),
+    };
+
+    context.stack().push(Value::Integer(stack_result as i64));
+    context.cmd_stream().poll();
 }
 
-fn op_arithmetic<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+fn cmp_vals(lhs: Value, rhs: Value) -> i32 {
+    use Value::*;
+
+    match (lhs, rhs) {
+        (String(s1), String(s2)) => s1.cmp(&s2) as i32,
+        (Integer(n1), Integer(n2)) => n1.cmp(&n2) as i32,
+        (Float(f1), Float(f2)) => {
+            let max_val = f1.abs().max(f2.abs());
+            let diff = (f1 - f2).abs();
+            let eps = if max_val > 1.0 {
+                max_val * constants::EPSILON
+            } else {
+                constants::EPSILON
+            };
+            if diff < eps {
+                0
+            } else {
+                f1.partial_cmp(&f2).unwrap() as i32
+            }
+        }
+        (Integer(n), Float(f)) | (Float(f), Integer(n)) => cmp_vals(Float(n as f64), Float(f)),
+        (String(_), Integer(_)) | (String(_), Float(_)) => 1,
+        (Integer(_), String(_)) | (Float(_), String(_)) => -1,
+    }
+}
+
+fn op_arithmetic<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, operator: char) {
+    use Value::*;
+
+    let rhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let lhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let op_result = match (lhs, rhs) {
+        (Integer(n1), Integer(n2)) => perform_int_op(n1, n2, operator),
+        (Float(f1), Float(f2)) => perform_float_op(f1, f1, operator),
+        (Integer(i1), Float(f2)) => perform_float_op(i1 as f64, f2, operator),
+        (Float(f1), Integer(i2)) => perform_float_op(f1, i2 as f64, operator),
+        (String(_), _) | (_, String(_)) => String("".to_string()),
+    };
+
+    context.stack().push(op_result);
+    context.cmd_stream().poll();
+}
+
+fn perform_int_op(n1: i64, n2: i64, operator: char) -> Value {
+    use Value::*;
+
+    match operator {
+        '+' => Integer(n1 + n2),
+        '-' => Integer(n1 - n2),
+        '*' => Integer(n1 * n2),
+        '/' => {
+            if n2 == 0 {
+                String("".to_string())
+            } else {
+                Integer(n1 / n2)
+            }
+        }
+        '%' => Integer(n1 % n2),
+        _ => panic!("Invalid arithmetic operator"),
+    }
+}
+
+fn perform_float_op(f1: f64, f2: f64, operator: char) -> Value {
+    use Value::*;
+
+    match operator {
+        '+' => Float(f1 + f2),
+        '-' => Float(f1 - f2),
+        '*' => Float(f1 * f2),
+        '/' => {
+            if f2 == 0.0 {
+                String("".to_string())
+            } else {
+                Float(f1 / f2)
+            }
+        }
+        '%' => String("".to_string()), // '%' with floating point numbers results in NAN
+        _ => panic!("Invalid arithmetic operator"),
+    }
 }
 
 fn op_logic<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
-}
-fn op_null_check<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
-}
-fn op_negation<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+    use Value::*;
+
+    let rhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+    let lhs = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let mut result = String("".to_string());
+    if let (Integer(n1), Integer(n2)) = (lhs, rhs) {
+        let b1 = n1 != 0;
+        let b2 = n2 != 0;
+
+        result = match cmd {
+            '&' => Integer((b1 && b2) as i64),
+            '|' => Integer((b1 || b2) as i64),
+            _ => panic!("Invalid logic operator!"),
+        }
+    }
+
+    context.stack().push(result);
+    context.cmd_stream().poll();
 }
 
-fn op_int_conversion<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+fn op_null_check<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
+    use Value::*;
+    let val = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let is_null = match val {
+        String(s) => s.is_empty(),
+        Integer(n) => n == 0,
+        Float(f) => f.abs() < constants::EPSILON,
+    };
+
+    context.stack().push(Integer(is_null as i64));
+    context.cmd_stream().poll();
+}
+fn op_negation<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
+    use Value::*;
+    let val = context
+        .stack()
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on stack!");
+
+    let result = match val {
+        String(_) => String("".to_string()),
+        Integer(n) => Integer(-n),
+        Float(f) => Float(-f),
+    };
+
+    context.stack().push(result);
+    context.cmd_stream().poll();
 }
 
-fn op_copy<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+fn op_int_conversion<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
+    use Value::*;
+    let val = context
+        .stack()
+        .pop_float()
+        .expect("RUNTIME ERROR: Float expected on stack!");
+
+    let result = Integer(val as i64);
+    context.stack().push(result);
+    context.cmd_stream().poll();
+}
+
+fn op_copy<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
+    let Some(Integer(val)) = context.stack().pop() else { return };
+    let Some(nth) = context.stack().nth((val - 1) as usize) else { return };
+
+    let elem = nth.clone();
+    context.stack().push(elem);
+    context.cmd_stream().poll();
 }
 fn op_delete<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
-    todo!()
+
 }
 fn op_apply_imm<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, cmd: char) {
     todo!()
@@ -122,11 +295,56 @@ fn op_write_output<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT
 
 #[cfg(test)]
 mod tests {
+    use std::io;
+    use std::io::Cursor;
     use super::*;
+    use Value::*;
 
-    #[test]
-    fn test_exection() {}
+    fn init_ctx(init_prog: &str, op_mode: i8) -> CalculatorContext<Cursor<&str>, Cursor<Vec<u8>>> {
+        // create output stream
+        let writer = Cursor::new(Vec::new());
+        // create inputstream
+        let reader = io::BufReader::new(Cursor::new(init_prog));
+        let mut ctx = CalculatorContext::from(init_prog, reader, writer);
+        ctx.set_op_mod(op_mode);
+        ctx
+    }
 
+    // test copy
     #[test]
-    fn test_op_write_output() {}
+    fn test_op_copy() {
+        let mut ctx = init_ctx("!", 0);
+
+        {
+            let stack = ctx.stack();
+            // prepare stack
+            stack.push(Integer(0));
+            stack.push(Integer(1));
+            stack.push(Integer(12));
+            stack.push(Integer(2)); // nth element -> 1
+        }
+
+        execute(&mut ctx, '!');
+        assert_eq!(ctx.cmd_stream().peek(), None, "Didn't consume cmd");
+        assert_eq!(ctx.stack().pop_int(), Some(1), "Wrong element copied");
+    }
+
+    // test delete
+    #[test]
+    fn test_op_delete() {
+        let mut ctx = init_ctx("$", 0);
+
+        {
+            let stack = ctx.stack();
+            // prepare stack
+            stack.push(Integer(0));
+            stack.push(Integer(1));
+            stack.push(Integer(12));
+            stack.push(Integer(2)); // nth element -> 1
+        }
+
+        execute(&mut ctx, '$');
+        assert_eq!(ctx.cmd_stream().peek(), None, "Didn't consume cmd");
+        assert_eq!(ctx.stack().pop_int(), Some(1), "Wrong element copied");
+    }
 }
