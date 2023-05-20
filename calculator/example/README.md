@@ -56,7 +56,7 @@ to enter.
 ((Old enough)") T  
 ((Too young)") F
 (Enter your age:)"
-f t ' 17 >  1+ ! @
+f t ' 17 >  1+ $ @
 ```
 
 In the first two lines we define two "functions" for the true and false case.
@@ -67,3 +67,9 @@ input and compares it to 17 so that adult persons result in the following stack:
 function from the stack and therefore only the true function is on the stack 
 which we execute with `@`. If the condition is false we delete the true function
 and execute the wrong case. 
+
+### hundred.txt
+
+**Output:** 1 2 3 4 ...
+
+Counts up to hundred and than stops, no infinite loop.
