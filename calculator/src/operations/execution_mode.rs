@@ -116,7 +116,7 @@ fn op_read_input<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>,
 
 fn op_write_output<IN: Read, OUT: Write>(context: &mut CalculatorContext<IN, OUT>, _: char) {
     let Some(stack_data) = context.stack().pop() else { panic!("RUNTIME ERROR: Nothing on stack!") };
-    context.out_stream().write(&stack_data);
+    context.out_stream().write(&stack_data).unwrap();
     context.cmd_stream().poll();
 }
 

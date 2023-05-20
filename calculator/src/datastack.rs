@@ -31,6 +31,28 @@ impl DataStack {
         self.values.last().cloned()
     }
 
+    /// Returns a copy of the n-th entry, counted from the top of the stack.
+    /// To get the entry on the top of the stack n must be 1.
+    /// If n isn't in the range, returns none.
+    pub fn peek_at(&mut self, n: usize) -> Option<Value> {
+        if n > self.values.len() {
+            return None;
+        }
+
+        self.values.get(self.values.len() - n).cloned()
+    }
+
+    /// Deletes the n-th entry of the stack, counted from the top of the stack.
+    /// To delete the top entry n must be 1.
+    /// If n isn't in the range, nothing will be deleted.
+    pub fn delete_at(&mut self, n: usize) {
+        if n > self.values.len() {
+            return;
+        }
+
+        self.values.remove(self.values.len() - n);
+    }
+
     /// Pop the top value only if it is an int, otherwise do nothing.
     pub fn pop_int(&mut self) -> Option<i64> {
         if let Some(Value::Integer(v)) = self.values.last() {
@@ -189,5 +211,42 @@ mod tests {
         let mut stack = DataStack::new();
 
         assert_eq!(stack.peek(), None);
+    }
+
+    #[test]
+    fn test_peek_at_on_empty() {
+        let mut stack = DataStack::new();
+
+        assert_eq!(stack.peek_at(3), None);
+    }
+
+    #[test]
+    fn test_peek_at_on_top() {
+        let mut stack = DataStack::new();
+        stack.push(Value::Integer(13));
+
+        assert_eq!(stack.peek_at(1), Some(Value::Integer(13)));
+    }
+
+    #[test]
+    fn test_delete_at_top() {
+        let mut stack = DataStack::new();
+        stack.push(Value::Integer(13));
+        stack.delete_at(1);
+
+        assert_eq!(stack.len(), 0);
+    }
+
+    #[test]
+    fn test_delete_at_middle() {
+        let mut stack = DataStack::new();
+        stack.push(Value::Integer(1));
+        stack.push(Value::Integer(2));
+        stack.push(Value::Integer(3));
+        stack.delete_at(2);
+
+        assert_eq!(stack.len(), 2);
+        assert_eq!(stack.pop_int(), Some(3));
+        assert_eq!(stack.pop_int(), Some(1));
     }
 }
