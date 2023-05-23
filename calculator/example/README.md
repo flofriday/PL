@@ -68,8 +68,14 @@ function from the stack and therefore only the true function is on the stack
 which we execute with `@`. If the condition is false we delete the true function
 and execute the wrong case. 
 
-### hundred.txt
+## hundred.txt
 
 **Output:** 1 2 3 4 ...
 
 Counts up to hundred and than stops, no infinite loop.
+
+### Explaination
+This combines the infinite loop example with the if-else example. It defines 
+three functions: `p` prints the top of the loop without poping it. `l` is the 
+print-increment-compare-loop and `e` is an empty function, used in this example
+only to end the loop.
