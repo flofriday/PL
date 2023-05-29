@@ -8,7 +8,7 @@ mod value;
 
 use crate::{
     cmd_stream::CmdStream, datastack::DataStack, input_stream::InputStream,
-    out_stream::OutputStream, parser::Parser, value::Value,
+    out_stream::OutputStream, parser::Parser, register_set::RegisterSet, value::Value,
 };
 
 fn main() {
@@ -28,9 +28,24 @@ fn main() {
     d.pop();
     println!("{d}");
 
+    /*
     let mut input_stream = InputStream::new();
     println!("Type something and press enter:");
     let val = input_stream.poll();
-    println!("You typed in {val:?}...");
-    let mut parser = Parser::new();
+    println!("You typed in {:?}...", val);
+    */
+
+    let complex = String::from("1(8)(9~)(4!4$_1+$@)@");
+    let factorial = String::from("3(A)3!3$3!@2$");
+    let single = String::from("5.1 12.3+");
+    let triple = String::from("15 2 3 4+*-");
+    let my_string = String::from("(5.55)55~");
+
+    let input = single;
+
+    let data_stack = DataStack::new();
+    let register_set = RegisterSet::new(&input);
+    let mut parser = Parser::new(data_stack, register_set);
+    parser.parse(input);
+    println!("{parser}");
 }
