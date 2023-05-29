@@ -28,3 +28,6 @@
 | Read input ’\’’                                 |     📝      |
 | Write output ’"’                                |     📝      |
 | Invalid Char                                    |     📝      |
+
+Issues
+- imprecision of floating point arithmetic bei conversions

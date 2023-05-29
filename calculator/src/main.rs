@@ -39,7 +39,7 @@ fn main() {
     let factorial = String::from("3(A)3!3$3!@2$");
     let single = String::from("5.1 12.3+");
     let triple = String::from("15 2 3 4+*-");
-    let my_string = String::from("(5.55)55~");
+    let my_string = String::from("(123.123)55~");
 
     let input = single;
 

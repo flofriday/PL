@@ -1,7 +1,5 @@
-use core::fmt;
-
 use crate::{datastack::DataStack, register_set::RegisterSet, value::Value};
-
+use core::fmt;
 const EPSILON: f64 = 1e-10;
 
 pub struct Parser {
@@ -107,21 +105,18 @@ impl Parser {
     fn float_construction(&mut self, _char: char) {
         if let Some(top_item) = self.data_stack.pop() {
             match top_item {
-                Value::Float(mut float_val) => {
-                    let digit = _char.to_digit(10).unwrap() as f64;
-                    let place = -(self.state.abs() - 1) as u32;
-                    float_val += digit * 10f64.powi(place as i32);
-                    self.data_stack.push(Value::Float(float_val));
-                    self.state -= 1;
+                Value::Float(float_val) => {
+                    let result = float_val
+                        + (_char.to_digit(10).unwrap_or(0) as f64)
+                            * 10.0f64.powf((self.state + 1) as f64);
+                    self.data_stack.push(Value::Float(result));
                 }
-                _ => panic!(
-                    "Cannot perform decimal place operation on non-float value: {}",
-                    top_item
-                ),
+                _ => panic!("Cannot handle a non-float value in float construction"),
             }
         } else {
             panic!("Data stack is empty");
         }
+        self.state -= 1;
     }
 
     /// Pushes the value of the input character (0 to 9)
@@ -358,5 +353,119 @@ impl fmt::Display for Parser {
             "State: {}\nData Stack: {}\nRegister Set: \n{}",
             self.state, self.data_stack, self.register_set
         )
+    }
+}
+
+#[cfg(test)]
+mod parser_tests {
+    use approx::assert_abs_diff_eq;
+
+    use super::*;
+    use crate::datastack::DataStack;
+    use crate::register_set::RegisterSet;
+
+    #[test]
+    fn test_integer_construction() {
+        let test_input = String::from("55");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(55));
+    }
+
+    #[test]
+    fn test_decimal_construction() {
+        let test_input = String::from("123.123");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result: f64 = parser
+            .data_stack
+            .pop()
+            .unwrap()
+            .to_string()
+            .parse()
+            .unwrap();
+        assert_abs_diff_eq!(result, 123.123, epsilon = 0.0001);
+    }
+
+    #[test]
+    fn test_braces() {
+        let test_input = String::from("()");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_parse_addition() {
+        let test_input = String::from("2 3 +");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(5));
+    }
+
+    #[test]
+    fn test_parse_string_concatenation() {
+        let test_input = String::from("((.))");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::String("(.)".to_string()));
+    }
+
+    #[test]
+    fn test_parse_negation() {
+        let test_input = String::from("5~");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(-5));
+    }
+
+    #[test]
+    fn test_parse_float_to_integer_conversion() {
+        let test_input = String::from("10.0 ?");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(10));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_zero() {
+        let test_input = String::from("0 _");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_an_empty_string() {
+        let test_input = String::from("() _");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_a_float() {
+        let test_input = String::from("0.00000000000001 _");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_register_operations() {
+        let test_input = String::from("42 A a");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(42));
     }
 }
