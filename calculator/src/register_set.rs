@@ -1,4 +1,5 @@
 use crate::value::Value;
+use core::fmt;
 use std::collections::HashMap;
 
 /// `RegisterSet` represents a set of 26 registers named by lowercase letters a to z.
@@ -82,6 +83,15 @@ impl RegisterSet {
             panic!("ReadSet::write - Trying to write non-existing register '{register}'")
         }
         self.registers.insert(register, value);
+    }
+}
+
+impl fmt::Display for RegisterSet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (register, value) in &self.registers {
+            write!(f, "Register {}: {}\n", register, value)?;
+        }
+        Ok(())
     }
 }
 
