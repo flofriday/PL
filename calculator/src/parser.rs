@@ -343,8 +343,13 @@ impl Parser {
         }
     }
 
-    fn handle_copy(&self, _char: char) {
-        todo!()
+    fn handle_copy(&mut self, _char: char) {
+        use Value::*;
+        let Some(Integer(val)) = self.data_stack.pop() else { return };
+        let Some(nth) = self.data_stack.nth((val - 1) as usize) else { return };
+
+        let elem = nth.clone();
+        self.data_stack.push(elem);
     }
 
     fn handle_delete(&self, _char: char) {
@@ -359,8 +364,9 @@ impl Parser {
         todo!()
     }
 
-    fn handle_stack_size(&self, _char: char) {
-        todo!()
+    fn handle_stack_size(&mut self, _char: char) {
+        let size = self.data_stack.len();
+        self.data_stack.push(Value::Integer(size as i64));
     }
 
     fn handle_read_input(&self, _char: char) {
@@ -551,5 +557,24 @@ mod parser_tests {
         parser.parse(test_input);
         let result = parser.data_stack.pop().unwrap();
         assert_eq!(result, Value::Integer(42));
+    }
+
+    #[test]
+    fn test_stack_size() {
+        let test_input = String::from("44 4#");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(2));
+    }
+
+    // test copy
+    #[test]
+    fn test_op_copy() {
+        let test_input = String::from("0 1 12 3 4 2!");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(4));
     }
 }

@@ -40,7 +40,7 @@ fn main() {
     let single = String::from("5.1 12.3+");
     let triple = String::from("15 2 3 4+*-");
     let my_string = String::from("(123.123)55~");
-    let my_string2 = String::from("8 7>");
+    let my_string2 = String::from("7.33 7.22>");
 
     let my_program = my_string2;
 
