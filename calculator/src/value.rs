@@ -1,4 +1,6 @@
+use std::cmp::Ordering;
 use std::fmt;
+use std::ops::{Add, Div, Mul, Rem, Sub};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Value {
@@ -6,8 +8,6 @@ pub enum Value {
     Float(f64),
     String(String),
 }
-
-use std::ops::{Add, Div, Mul, Rem, Sub};
 
 impl Add for Value {
     type Output = Value;
@@ -65,6 +65,17 @@ impl Rem for Value {
             (Value::Integer(a), Value::Integer(b)) => Value::Integer(a % b),
             (Value::Float(a), Value::Float(b)) => Value::Float(a % b),
             _ => panic!("Invalid arithmetic operation"),
+        }
+    }
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
+        match (self, other) {
+            (Value::Integer(a), Value::Integer(b)) => a.partial_cmp(b),
+            (Value::Float(a), Value::Float(b)) => a.partial_cmp(b),
+            (Value::String(a), Value::String(b)) => a.partial_cmp(b),
+            _ => None, // Comparison between different types is not supported
         }
     }
 }

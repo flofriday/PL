@@ -212,7 +212,19 @@ impl Parser {
         }
     }
 
-    fn handle_comparison(&self, _char: char) {}
+    fn handle_comparison(&mut self, operator: char) {
+        if let (Some(value1), Some(value2)) = (self.data_stack.pop(), self.data_stack.pop()) {
+            let result = match operator {
+                '=' => value1 == value2,
+                '<' => value2 < value1,
+                '>' => value2 > value1,
+                _ => panic!("Invalid operator"),
+            };
+            self.data_stack.push(Value::Integer(result as i64));
+        } else {
+            panic!("Data stack does not contain enough values");
+        }
+    }
 
     /// Pops two entries from the data stack, applies the operation on them and
     /// pushes the result to the data stack. These operators have
@@ -449,6 +461,33 @@ mod parser_tests {
         parser.parse(test_input);
         let result = parser.data_stack.pop().unwrap();
         assert_eq!(result, Value::Integer(8));
+    }
+
+    #[test]
+    fn test_equals() {
+        let test_input = String::from("8 8=");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_less_than() {
+        let test_input = String::from("7 8<");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_greater_than() {
+        let test_input = String::from("8 7>");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(1));
     }
 
     #[test]
