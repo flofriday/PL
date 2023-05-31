@@ -40,12 +40,13 @@ fn main() {
     let single = String::from("5.1 12.3+");
     let triple = String::from("15 2 3 4+*-");
     let my_string = String::from("(123.123)55~");
+    let my_string2 = String::from("4 2/");
 
-    let input = single;
+    let my_program = my_string2;
 
     let data_stack = DataStack::new();
-    let register_set = RegisterSet::new(&input);
+    let register_set = RegisterSet::new(&my_program);
     let mut parser = Parser::new(data_stack, register_set);
-    parser.parse(input);
+    parser.parse(my_program);
     println!("{parser}");
 }

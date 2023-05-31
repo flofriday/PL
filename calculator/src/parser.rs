@@ -212,41 +212,59 @@ impl Parser {
         }
     }
 
-    fn handle_comparison(&self, _char: char) {
-        todo!()
-    }
+    fn handle_comparison(&self, _char: char) {}
 
-    fn handle_arithmetic_operation(&mut self, _char: char) {
-        match _char {
-            '+' => self.addition(),
-            _ => todo!(),
+    /// Pops two entries from the data stack, applies the operation on them and
+    /// pushes the result to the data stack. These operators have
+    /// the usual semantics when applied to two integers (resulting
+    /// in an integer) or two floating-point numbers (resulting in a
+    /// floating-point number). If one operand is an integer and the
+    /// other a floating-point number, the integer is converted to a
+    /// floating-point number before executing the operation. The
+    /// empty string () is pushed to the data stack if an operand is a
+    /// string, or a number should be divided by 0 or 0.0. ’%’ stands
+    /// for the rest of a division; an application of ’%’ to floatingpoint numbers results in ().
+    /// The ordering of operands has to be considered for non-associative operations: 4 2- and 4 2/
+    /// have 2 as result.
+    fn handle_arithmetic_operation(&mut self, operator: char) {
+        use Value::*;
+        fn handle_operation(a: Value, b: Value, operator: char) -> Value {
+            match operator {
+                '+' => a + b,
+                '-' => b - a,
+                '*' => a * b,
+                '/' => a % b, // TODO How does this work when I execute the program (4 2/), how is it not doing 2/4?
+                _ => panic!("Invalid arithmetic operator"),
+            }
         }
-    }
-
-    fn addition(&mut self) {
         if let (Some(a), Some(b)) = (self.data_stack.pop(), self.data_stack.pop()) {
             match (a, b) {
-                (Value::Integer(a), Value::Integer(b)) => {
-                    self.data_stack.push(Value::Integer(a + b));
+                (Integer(a), Integer(b)) => {
+                    self.data_stack
+                        .push(handle_operation(Integer(a), Integer(b), operator));
                 }
-                (Value::Float(a), Value::Float(b)) => {
-                    self.data_stack.push(Value::Float(a + b));
+                (Float(a), Float(b)) => {
+                    self.data_stack
+                        .push(handle_operation(Float(a), Float(b), operator));
                 }
-                (Value::Integer(a), Value::Float(b)) => {
-                    self.data_stack.push(Value::Float((a as f64) + b));
+                (Integer(a), Float(b)) => {
+                    self.data_stack
+                        .push(handle_operation(Float(a as f64), Float(b), operator));
                 }
-                (Value::Float(a), Value::Integer(b)) => {
-                    self.data_stack.push(Value::Float(a + (b as f64)));
+                (Float(a), Integer(b)) => {
+                    self.data_stack
+                        .push(handle_operation(Float(a), Float(b as f64), operator));
                 }
                 _ => {
                     // Handle other cases, such as string operands or division by zero
-                    self.data_stack.push(Value::String("()".to_string()));
+                    self.data_stack.push(String("".to_string()));
                 }
             }
         } else {
             // Handle case when there are not enough operands on the stack
-            self.data_stack.push(Value::String("()".to_string()));
+            self.data_stack.push(String("()".to_string()));
         }
+        self.state = 0;
     }
 
     fn handle_logic_operation(&self, _char: char) {
@@ -259,14 +277,14 @@ impl Parser {
     /// otherwise pushes 0 onto the data stack.
     /// This operator can be used to negate Booleans.
     fn handle_null_check(&mut self, _char: char) {
+        use Value::*;
         if let Some(top_item) = self.data_stack.pop() {
             let result = match top_item {
-                Value::String(string_val) => string_val.is_empty(),
-                Value::Integer(int_val) => int_val == 0,
-                Value::Float(float_val) => float_val.abs() < EPSILON,
+                String(string_val) => string_val.is_empty(),
+                Integer(int_val) => int_val == 0,
+                Float(float_val) => float_val.abs() < EPSILON,
             };
-            self.data_stack
-                .push(Value::Integer(if result { 1 } else { 0 }));
+            self.data_stack.push(Integer(if result { 1 } else { 0 }));
         } else {
             panic!("Data stack is empty");
         }
@@ -398,12 +416,39 @@ mod parser_tests {
     }
 
     #[test]
-    fn test_parse_addition() {
+    fn test_addition() {
         let test_input = String::from("2 3 +");
         let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
         parser.parse(test_input);
         let result = parser.data_stack.pop().unwrap();
         assert_eq!(result, Value::Integer(5));
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let test_input = String::from("4 2-");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(2));
+    }
+
+    #[test]
+    fn test_division() {
+        let test_input = String::from("4 2/");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(2));
+    }
+
+    #[test]
+    fn test_multiplication() {
+        let test_input = String::from("4 2*");
+        let mut parser = Parser::new(DataStack::new(), RegisterSet::new(&test_input));
+        parser.parse(test_input);
+        let result = parser.data_stack.pop().unwrap();
+        assert_eq!(result, Value::Integer(8));
     }
 
     #[test]
