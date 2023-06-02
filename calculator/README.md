@@ -19,14 +19,14 @@
 | Logic operation                                 |     📝      |                                                                                         |
 | Null-Check ’_’                                  |     🚧      |                                       not tested                                        |
 | Negation ’~’                                    |     ✔️      |                                                                                         |
-| Integer conversion ’?’                          |     📝      |                                                                                         |
-| Copy ’!’                                        |     📝      |                                                                                         |
+| Integer conversion ’?’                          |     ✔️      |                                                                                         |
+| Copy ’!’                                        |     ✔️      |                                                                                         |
 | Delete ’$’                                      |     📝      |                                                                                         |
 | Apply immediately ’@’                           |     📝      |                                                                                         |
 | Apply later ’\’’                                |     📝      |                                                                                         |
 | Stack size ’#’                                  |     📝      |                                                                                         |
 | Read input ’\’’                                 |     📝      |                                                                                         |
-| Write output ’"’                                |     📝      |                                                                                         |
+| Write output ’"’                                |     🚧      |            This is kinda hard to do without passing the stream to the class             |
 | Invalid Char                                    |     📝      |                                                                                         |
 | Tests inside registers                          |     📝      |                                                                                         |
 

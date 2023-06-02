@@ -31,7 +31,7 @@ impl Parser {
                 '+' | '-' | '*' | '/' => self.handle_arithmetic_operation(_char),
                 '&' | '|' => self.handle_logic_operation(_char),
                 '_' => self.handle_null_check(_char),
-                '~' => self.handle_negation(),
+                '~' => self.handle_negation(_char),
                 '?' => self.handle_integer_conversion(_char),
                 '!' => self.handle_copy(_char),
                 '$' => self.handle_delete(_char),
@@ -138,7 +138,10 @@ impl Parser {
                     self.data_stack.push(Value::Integer(result));
                 }
                 Value::Float(_) => panic!("Cannot handle a float in integer construction"),
-                _ => panic!("Cannot handle a String in integer construction"),
+                _ => panic!(
+                    "Cannot handle a String in integer construction {}",
+                    top_item
+                ),
             }
         } else {
             panic!("Data stack is empty");
@@ -199,6 +202,10 @@ impl Parser {
 
     /// Pushes the contents of the corresponding data register a to z onto the data stack.
     fn handle_lower_case_char(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         let value = self.register_set.read(_char);
         self.data_stack.push(value.clone());
     }
@@ -207,12 +214,20 @@ impl Parser {
     /// and stores this value in the corresponding lowercase data register a to z,
     /// thereby destroying the old register value.
     fn handle_upper_case_char(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         if let Some(value) = self.data_stack.pop() {
             self.register_set.write(_char.to_ascii_lowercase(), value);
         }
     }
 
     fn handle_comparison(&mut self, operator: char) {
+        if self.state >= 1 {
+            self.string_construction(operator);
+            return;
+        }
         if let (Some(value1), Some(value2)) = (self.data_stack.pop(), self.data_stack.pop()) {
             let result = match operator {
                 '=' => value1 == value2,
@@ -240,6 +255,10 @@ impl Parser {
     /// have 2 as result.
     fn handle_arithmetic_operation(&mut self, operator: char) {
         use Value::*;
+        if self.state >= 1 {
+            self.string_construction(operator);
+            return;
+        }
         fn handle_operation(a: Value, b: Value, operator: char) -> Value {
             match operator {
                 '+' => a + b,
@@ -279,7 +298,11 @@ impl Parser {
         self.state = 0;
     }
 
-    fn handle_logic_operation(&self, _char: char) {
+    fn handle_logic_operation(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         todo!()
     }
 
@@ -289,6 +312,10 @@ impl Parser {
     /// otherwise pushes 0 onto the data stack.
     /// This operator can be used to negate Booleans.
     fn handle_null_check(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         use Value::*;
         if let Some(top_item) = self.data_stack.pop() {
             let result = match top_item {
@@ -306,7 +333,11 @@ impl Parser {
     /// Changes the sign of the top entry on the data stack if
     /// it is an integer or floating-point number, otherwise it replaces
     /// the top entry with the empty string ().
-    fn handle_negation(&mut self) {
+    fn handle_negation(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         if let Some(top_item) = self.data_stack.pop() {
             match top_item {
                 Value::Integer(int_val) => {
@@ -322,10 +353,13 @@ impl Parser {
         } else {
             panic!("Data stack is empty");
         }
-        self.state = 0;
     }
 
     fn handle_integer_conversion(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         if let Some(top_item) = self.data_stack.pop() {
             match top_item {
                 Value::Float(float_val) => {
@@ -345,39 +379,85 @@ impl Parser {
 
     fn handle_copy(&mut self, _char: char) {
         use Value::*;
-        let Some(Integer(val)) = self.data_stack.pop() else { return };
-        let Some(nth) = self.data_stack.nth((val - 1) as usize) else { return };
-
-        let elem = nth.clone();
-        self.data_stack.push(elem);
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
+        if let Some(Integer(n)) = self.data_stack.pop() {
+            if let Some(entry) = self.data_stack.nth(n as usize - 1).cloned() {
+                self.data_stack.push(entry);
+            }
+        }
     }
 
-    fn handle_delete(&self, _char: char) {
-        todo!()
+    fn handle_delete(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
+        if let Some(Value::Integer(n)) = self.data_stack.pop() {
+            let stack_len = self.data_stack.len();
+            let index = stack_len - n as usize;
+
+            if index > 0 && index <= stack_len {
+                self.data_stack.remove(index - 1);
+            } else {
+                panic!("Invalid index for deleting entry");
+            }
+        } else {
+            panic!("Top entry is not an integer in the appropriate range");
+        }
     }
 
-    fn handle_apply_immediately(&self, _char: char) {
-        todo!()
+    fn handle_apply_immediately(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
+        if let Some(Value::String(string_val)) = self.data_stack.pop() {
+            let commands = string_val.chars().rev().collect::<String>();
+            self.parse(commands);
+        }
     }
 
-    fn handle_apply_later(&self, _char: char) {
+    fn handle_apply_later(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         todo!()
     }
 
     fn handle_stack_size(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         let size = self.data_stack.len();
         self.data_stack.push(Value::Integer(size as i64));
     }
 
-    fn handle_read_input(&self, _char: char) {
+    fn handle_read_input(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         todo!()
     }
 
-    fn handle_write_output(&self, _char: char) {
+    fn handle_write_output(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         todo!()
     }
 
-    fn handle_invalid_char(&self, _char: char) {
+    fn handle_invalid_char(&mut self, _char: char) {
+        if self.state >= 1 {
+            self.string_construction(_char);
+            return;
+        }
         todo!()
     }
 }

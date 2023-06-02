@@ -64,6 +64,15 @@ impl DataStack {
         }
     }
 
+    /// Remove the nth entry from the data stack (counted from the top)
+    pub fn remove(&mut self, n: usize) {
+        if n <= self.values.len() {
+            self.values.remove(self.values.len() - n);
+        } else {
+            panic!("Invalid index for deleting entry");
+        }
+    }
+
     /// Returns the reference to the nth (from top) value on the stack, if exists.
     pub fn nth(&self, n: usize) -> Option<&Value> {
         let len = self.values.len();
@@ -188,6 +197,31 @@ mod tests {
         // Attempt to pop integer or float from a string value should return None
         assert_eq!(stack.pop_int(), None);
         assert_eq!(stack.pop_float(), None);
+    }
+
+    #[test]
+    fn test_remove() {
+        let mut stack = DataStack::new();
+
+        stack.push(Value::Integer(10));
+        stack.push(Value::Float(20.5));
+        stack.push(Value::String("Hello".into()));
+
+        stack.remove(2);
+
+        assert_eq!(stack.pop(), Some(Value::String("Hello".into())));
+        assert_eq!(stack.pop(), Some(Value::Integer(10)));
+        assert_eq!(stack.pop(), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid index for deleting entry")]
+    fn test_remove_invalid_index() {
+        let mut stack = DataStack::new();
+
+        stack.push(Value::Integer(10));
+
+        stack.remove(2);
     }
 
     #[test]
