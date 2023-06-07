@@ -1,5 +1,5 @@
 use crate::value::Value;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Read};
 
 /// `InputStream` struct represents a stream of input values.
 ///
@@ -20,12 +20,12 @@ use std::io::{self, BufRead, BufReader};
 /// assert_eq!(input_stream.peek().unwrap(), Value::String("hello".to_string()));
 /// ```
 #[derive(Debug)]
-pub struct InputStream<R: BufRead> {
-    reader: R,
+pub struct InputStream<R: Read> {
+    reader: BufReader<R>,
     buffer: Option<Value>,
 }
 
-impl InputStream<BufReader<io::Stdin>> {
+impl InputStream<io::Stdin> {
     /// Creates a new `InputStream` that reads from stdin.
     ///
     /// # Examples
@@ -41,7 +41,7 @@ impl InputStream<BufReader<io::Stdin>> {
     }
 }
 
-impl<R: BufRead> InputStream<R> {
+impl<R: Read> InputStream<R> {
     /// Creates a new `InputStream` that reads from a given reader.
     ///
     /// # Examples
@@ -51,9 +51,9 @@ impl<R: BufRead> InputStream<R> {
     /// let reader = io::BufReader::new(Cursor::new(data));
     /// let mut input_stream = InputStream::from(reader);
     /// ```
-    pub fn from(reader: R) -> Self {
+    pub fn from(reader: BufReader<R>) -> Self {
         Self {
-            reader: reader,
+            reader,
             buffer: None,
         }
     }
@@ -127,6 +127,34 @@ impl<R: BufRead> InputStream<R> {
 
         self.buffer = Some(val.clone());
         Ok(val)
+    }
+
+    /// Appends a string to the existing stream.
+    ///
+    /// The string is parsed into a `Value` and added to the buffer for subsequent retrieval.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut input_stream = InputStream::new();
+    ///
+    /// input_stream.append("123\n".to_string());
+    /// assert_eq!(input_stream.poll().unwrap(), Value::Integer(123));
+    ///
+    /// input_stream.append("hello\n".to_string());
+    /// assert_eq!(input_stream.poll().unwrap(), Value::String("hello".to_string()));
+    /// ```
+    pub fn append(&mut self, input: String) {
+        let trimmed_input = input.trim();
+        let val = if let Ok(integer) = trimmed_input.parse::<i64>() {
+            Value::Integer(integer)
+        } else if let Ok(float) = trimmed_input.parse::<f64>() {
+            Value::Float(float)
+        } else {
+            Value::String(trimmed_input.into())
+        };
+
+        self.buffer = Some(val);
     }
 }
 
