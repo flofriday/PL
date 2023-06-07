@@ -73,10 +73,9 @@ impl DataStack {
         }
     }
 
-    /// Returns the reference to the nth (from top) value on the stack, if exists.
-    pub fn nth(&self, n: usize) -> Option<&Value> {
-        let len = self.values.len();
-        self.values.get(len - n)
+    /// Returns one element from the stack by index
+    pub fn nth(&self, index: usize) -> Option<&Value> {
+        self.values.get(index)
     }
 }
 
