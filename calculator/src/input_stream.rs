@@ -128,34 +128,6 @@ impl<R: Read> InputStream<R> {
         self.buffer = Some(val.clone());
         Ok(val)
     }
-
-    /// Appends a string to the existing stream.
-    ///
-    /// The string is parsed into a `Value` and added to the buffer for subsequent retrieval.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut input_stream = InputStream::new();
-    ///
-    /// input_stream.append("123\n".to_string());
-    /// assert_eq!(input_stream.poll().unwrap(), Value::Integer(123));
-    ///
-    /// input_stream.append("hello\n".to_string());
-    /// assert_eq!(input_stream.poll().unwrap(), Value::String("hello".to_string()));
-    /// ```
-    pub fn append(&mut self, input: String) {
-        let trimmed_input = input.trim();
-        let val = if let Ok(integer) = trimmed_input.parse::<i64>() {
-            Value::Integer(integer)
-        } else if let Ok(float) = trimmed_input.parse::<f64>() {
-            Value::Float(float)
-        } else {
-            Value::String(trimmed_input.into())
-        };
-
-        self.buffer = Some(val);
-    }
 }
 
 #[cfg(test)]

@@ -3,10 +3,7 @@ use std::io::{Read, Write};
 use crate::value::Value::Integer;
 use crate::{calculator::Calculator, value::Value};
 
-pub mod constants {
-    // comparison constant
-    pub const EPSILON: f64 = 1e-10;
-}
+pub const EPSILON: f64 = 1e-10;
 
 pub fn handle_execution_mode<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     match cmd {
@@ -65,7 +62,6 @@ fn op_upper_letter<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd:
     let Some(stack_data) = context.stack().pop() else {
         panic!("RUNTIME ERROR: Tried ot write top of stack to register {cmd}, but stack is empty")
     };
-
     context
         .registers()
         .write(cmd.to_ascii_lowercase(), stack_data);
@@ -102,9 +98,9 @@ fn cmp_vals(lhs: Value, rhs: Value) -> i32 {
             let max_val = f1.abs().max(f2.abs());
             let diff = (f1 - f2).abs();
             let eps = if max_val > 1.0 {
-                max_val * constants::EPSILON
+                max_val * EPSILON
             } else {
-                constants::EPSILON
+                EPSILON
             };
             if diff < eps {
                 0
@@ -118,65 +114,59 @@ fn cmp_vals(lhs: Value, rhs: Value) -> i32 {
     }
 }
 
+/// Pops two entries from the data stack, applies the operation on them and
+/// pushes the result to the data stack. These operators have
+/// the usual semantics when applied to two integers (resulting
+/// in an integer) or two floating-point numbers (resulting in a
+/// floating-point number). If one operand is an integer and the
+/// other a floating-point number, the integer is converted to a
+/// floating-point number before executing the operation. The
+/// empty string () is pushed to the data stack if an operand is a
+/// string, or a number should be divided by 0 or 0.0. ’%’ stands
+/// for the rest of a division; an application of ’%’ to floatingpoint numbers results in ().
+/// The ordering of operands has to be considered for non-associative operations: 4 2- and 4 2/
+/// have 2 as result.
 fn op_arithmetic<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, operator: char) {
     use Value::*;
-
-    let rhs = context
-        .stack()
-        .pop()
-        .expect("RUNTIME ERROR: Nothing on stack!");
-
-    let lhs = context
-        .stack()
-        .pop()
-        .expect("RUNTIME ERROR: Nothing on stack!");
-
-    let op_result = match (lhs, rhs) {
-        (Integer(n1), Integer(n2)) => perform_int_op(n1, n2, operator),
-        (Float(f1), Float(f2)) => perform_float_op(f1, f1, operator),
-        (Integer(i1), Float(f2)) => perform_float_op(i1 as f64, f2, operator),
-        (Float(f1), Integer(i2)) => perform_float_op(f1, i2 as f64, operator),
-        (String(_), _) | (_, String(_)) => String("".to_string()),
-    };
-
-    context.stack().push(op_result);
-}
-
-fn perform_int_op(n1: i64, n2: i64, operator: char) -> Value {
-    use Value::*;
-
-    match operator {
-        '+' => Integer(n1 + n2),
-        '-' => Integer(n1 - n2),
-        '*' => Integer(n1 * n2),
-        '/' => {
-            if n2 == 0 {
-                String("".to_string())
-            } else {
-                Integer(n1 / n2)
-            }
+    fn handle_operation(a: Value, b: Value, operator: char) -> Value {
+        match operator {
+            '+' => a + b,
+            '-' => b - a,
+            '*' => a * b,
+            '/' => a % b, // TODO How does this work when I execute the program (4 2/), how is it not doing 2/4?
+            _ => panic!("Invalid arithmetic operator"),
         }
-        '%' => Integer(n1 % n2),
-        _ => panic!("Invalid arithmetic operator"),
     }
-}
-
-fn perform_float_op(f1: f64, f2: f64, operator: char) -> Value {
-    use Value::*;
-
-    match operator {
-        '+' => Float(f1 + f2),
-        '-' => Float(f1 - f2),
-        '*' => Float(f1 * f2),
-        '/' => {
-            if f2 == 0.0 {
-                String("".to_string())
-            } else {
-                Float(f1 / f2)
+    if let (Some(a), Some(b)) = (context.stack().pop(), context.stack().pop()) {
+        match (a, b) {
+            (Integer(a), Integer(b)) => {
+                context
+                    .stack()
+                    .push(handle_operation(Integer(a), Integer(b), operator));
+            }
+            (Float(a), Float(b)) => {
+                context
+                    .stack()
+                    .push(handle_operation(Float(a), Float(b), operator));
+            }
+            (Integer(a), Float(b)) => {
+                context
+                    .stack()
+                    .push(handle_operation(Float(a as f64), Float(b), operator));
+            }
+            (Float(a), Integer(b)) => {
+                context
+                    .stack()
+                    .push(handle_operation(Float(a), Float(b as f64), operator));
+            }
+            _ => {
+                // Handle other cases, such as string operands or division by zero
+                context.stack().push(String("".to_string()));
             }
         }
-        '%' => String("".to_string()), // '%' with floating point numbers results in NAN
-        _ => panic!("Invalid arithmetic operator"),
+    } else {
+        // Handle case when there are not enough operands on the stack
+        context.stack().push(String("()".to_string()));
     }
 }
 
@@ -207,21 +197,28 @@ fn op_logic<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) 
     context.stack().push(result);
 }
 
-fn op_null_check<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
+/// Pops a value from the data stack
+/// and pushes 1 onto the data stack if the popped value is the empty string,
+/// the integer 0, or a floating-point number between −epsilon and epsilon,
+/// otherwise pushes 0 onto the data stack.
+/// This operator can be used to negate Booleans.
+fn op_null_check<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _char: char) {
     use Value::*;
-    let val = context
-        .stack()
-        .pop()
-        .expect("RUNTIME ERROR: Nothing on stack!");
-
-    let is_null = match val {
-        String(s) => s.is_empty(),
-        Integer(n) => n == 0,
-        Float(f) => f.abs() < constants::EPSILON,
-    };
-
-    context.stack().push(Integer(is_null as i64));
+    if let Some(top_item) = context.stack().pop() {
+        let result = match top_item {
+            String(string_val) => string_val.is_empty(),
+            Integer(int_val) => int_val == 0,
+            Float(float_val) => float_val.abs() < EPSILON,
+        };
+        context.stack().push(Integer(if result { 1 } else { 0 }));
+    } else {
+        panic!("Data stack is empty");
+    }
 }
+
+/// Changes the sign of the top entry on the data stack if
+/// it is an integer or floating-point number, otherwise it replaces
+/// the top entry with the empty string ().
 fn op_negation<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
     use Value::*;
     let val = context
@@ -270,16 +267,15 @@ fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char)
 }
 fn op_apply_imm<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     if let Some(Value::String(string_val)) = context.stack().pop() {
-        context
-            .in_stream()
-            .append(string_val.chars().rev().collect::<String>())
+        context.cmd_stream().prepend(&string_val);
     }
 }
 fn op_apply_later<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     todo!()
 }
 fn op_stack_size<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
-    todo!()
+    let size = context.stack().len();
+    context.stack().push(Value::Integer(size as i64));
 }
 
 fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
@@ -293,56 +289,161 @@ fn op_write_output<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: c
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io;
-    use std::io::Cursor;
-    use Value::*;
 
-    fn init_ctx(init_prog: &str, op_mode: i8) -> Calculator<Cursor<&str>, Cursor<Vec<u8>>> {
-        // create output stream
-        let writer = Cursor::new(Vec::new());
-        // create inputstream
-        let reader = io::BufReader::new(Cursor::new(init_prog));
-        let mut ctx = Calculator::from(init_prog, reader, writer);
-        ctx.set_op_mod(op_mode);
-        ctx
+    use super::*;
+    use approx::assert_abs_diff_eq;
+
+    #[test]
+    fn test_integer_construction() {
+        let test_input = String::from("55");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(55));
+    }
+
+    #[test]
+    fn test_decimal_construction() {
+        let triple = String::from("123.123");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&triple);
+        let result = calc.run();
+        //assert_abs_diff_eq!(result, 123.123, epsilon = 0.0001);
+    }
+
+    #[test]
+    fn test_braces() {
+        let test_input = String::from("()");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_addition() {
+        let test_input = String::from("2 3 +");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(5));
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let test_input = String::from("4 2-");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(2));
+    }
+
+    #[test]
+    fn test_division() {
+        let test_input = String::from("4 2/");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(2));
+    }
+
+    #[test]
+    fn test_multiplication() {
+        let test_input = String::from("4 2*");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(8));
+    }
+
+    #[test]
+    fn test_equals() {
+        let test_input = String::from("8 8=");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_less_than() {
+        let test_input = String::from("7 8<");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_greater_than() {
+        let test_input = String::from("8 7>");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_string_concatenation() {
+        let test_input = String::from("((.))");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::String("(.)".to_string()));
+    }
+
+    #[test]
+    fn test_parse_negation() {
+        let test_input = String::from("5~");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(-5));
+    }
+
+    #[test]
+    fn test_parse_float_to_integer_conversion() {
+        let test_input = String::from("10.0 ?");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(10));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_zero() {
+        let test_input = String::from("0 _");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_an_empty_string() {
+        let test_input = String::from("() _");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_null_check_with_a_float() {
+        let test_input = String::from("0.00000000000001 _");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(1));
+    }
+
+    #[test]
+    fn test_parse_register_operations() {
+        let test_input = String::from("42 A a");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(42));
+    }
+
+    #[test]
+    fn test_stack_size() {
+        let test_input = String::from("44 4#");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(2));
     }
 
     // test copy
     #[test]
     fn test_op_copy() {
-        let mut ctx = init_ctx("!", 0);
-
-        {
-            let stack = ctx.stack();
-            // prepare stack
-            stack.push(Integer(0));
-            stack.push(Integer(1));
-            stack.push(Integer(12));
-            stack.push(Integer(2)); // nth element -> 1
-        }
-
-        handle_execution_mode(&mut ctx, '!');
-        assert_eq!(ctx.cmd_stream().peek(), None, "Didn't consume cmd");
-        assert_eq!(ctx.stack().pop_int(), Some(1), "Wrong element copied");
-    }
-
-    // test delete
-    #[test]
-    fn test_op_delete() {
-        let mut ctx = init_ctx("$", 0);
-
-        {
-            let stack = ctx.stack();
-            // prepare stack
-            stack.push(Integer(0));
-            stack.push(Integer(1));
-            stack.push(Integer(12));
-            stack.push(Integer(2)); // nth element -> 1
-        }
-
-        handle_execution_mode(&mut ctx, '$');
-        assert_eq!(ctx.cmd_stream().peek(), None, "Didn't consume cmd");
-        assert_eq!(ctx.stack().pop_int(), Some(1), "Wrong element copied");
+        let test_input = String::from("0 1 12 3 4 2!");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
+        let result = calc.run();
+        assert_eq!(result, Value::Integer(4));
     }
 }

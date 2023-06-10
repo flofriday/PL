@@ -67,7 +67,7 @@ impl DataStack {
     /// Remove the nth entry from the data stack (counted from the top)
     pub fn remove(&mut self, n: usize) {
         if n <= self.values.len() {
-            self.values.remove(self.values.len() - n);
+            self.values.remove(n - 1);
         } else {
             panic!("Invalid index for deleting entry");
         }

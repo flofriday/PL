@@ -16,14 +16,16 @@ use crate::{
 };
 
 fn main() {
+    // A as a shorthand for 3!3!1-2!1=()5!(C)@2$*
+    // C as a shorthand for 4!4$_1+$@
     let complex = String::from("1(8)(9~)(4!4$_1+$@)@");
-    let factorial = String::from("3(A)3!3$3!@2$");
+    let factorial_of_3 = String::from("3(3!3!1-2!1=()5!(4!4$_1+$@)@2$*)3!3$3!@2$");
     let single = String::from("5.1 12.3+");
     let triple = String::from("15 2 3 4+*-");
     let my_string = String::from("(123.123)55~");
     let my_string2 = String::from("(8)(9~)(4!4$_1+$@)@");
 
-    let my_program = factorial;
+    let my_program = factorial_of_3;
 
     // let data_stack = DataStack::new();
     // let register_set = RegisterSet::new(&my_program);
