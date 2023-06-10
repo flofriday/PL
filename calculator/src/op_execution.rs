@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 
+use crate::calculator::{INTEGER_CONSTRUCTION_MODE, DECIMAL_PLACE_CONSTRUCTION_MODE};
 use crate::value::Value::Integer;
 use crate::{calculator::Calculator, value::Value};
 
@@ -8,7 +9,7 @@ pub const EPSILON: f64 = 1e-10;
 pub fn handle_execution_mode<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     match cmd {
         '0'..='9' => op_digit(context, cmd),
-        '.' => op_digit(context, cmd),
+        '.' => op_dot(context, cmd),
         '(' => op_open_bracket(context, cmd),
         'a'..='z' => op_lower_letter(context, cmd),
         'A'..='Z' => op_upper_letter(context, cmd),
@@ -34,14 +35,14 @@ fn op_digit<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) 
     // push value on stack
     context.stack().push(Value::Integer(val));
     // switch to integer construction mode
-    context.set_op_mod(-1);
+    context.set_op_mod(INTEGER_CONSTRUCTION_MODE);
 }
 
 fn op_dot<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     // push 0.0 on stack
     context.stack().push(Value::Float(0.0));
     // switch to float construction mode / decimal place construction
-    context.set_op_mod(-2);
+    context.set_op_mod(DECIMAL_PLACE_CONSTRUCTION_MODE);
 }
 
 fn op_open_bracket<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
@@ -256,6 +257,7 @@ fn op_copy<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
         context.stack().push(elem);
     }
 }
+
 fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     let len = context.stack().len() as i64;
     if let Some(Integer(val)) = context.stack().pop() {
@@ -265,14 +267,17 @@ fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char)
         }
     }
 }
+
 fn op_apply_imm<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     if let Some(Value::String(string_val)) = context.stack().pop() {
         context.cmd_stream().prepend(&string_val);
     }
 }
+
 fn op_apply_later<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     todo!()
 }
+
 fn op_stack_size<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     let size = context.stack().len();
     context.stack().push(Value::Integer(size as i64));
@@ -283,8 +288,7 @@ fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: c
 }
 
 fn op_write_output<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
-    let Some(stack_data) = context.stack().pop() else { panic!("RUNTIME ERROR: Nothing on stack!") };
-    context.out_stream().write(&stack_data);
+    todo!()
 }
 
 #[cfg(test)]

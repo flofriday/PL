@@ -8,6 +8,10 @@ use crate::{
     out_stream::OutputStream, register_set::RegisterSet, value::Value,
 };
 
+pub const EXECUTION_MODE: i8 = 0;
+pub const INTEGER_CONSTRUCTION_MODE: i8 = -1;
+pub const DECIMAL_PLACE_CONSTRUCTION_MODE: i8 = -2;
+
 pub struct Calculator<IN: Read, OUT: Write> {
     op_mode: i8,
 

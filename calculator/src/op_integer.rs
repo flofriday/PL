@@ -1,6 +1,10 @@
 use std::io::{Read, Write};
 
-use crate::{calculator::Calculator, op_execution::handle_execution_mode, value::Value};
+use crate::{
+    calculator::{Calculator, DECIMAL_PLACE_CONSTRUCTION_MODE, EXECUTION_MODE},
+    op_execution::handle_execution_mode,
+    value::Value,
+};
 
 pub fn handle_integer<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
     assert_eq!(context.op_mode(), -1, "Wrong operation mode");
@@ -18,7 +22,7 @@ pub fn handle_integer<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, c
         }
         '.' => {
             // switch to decimal place construction
-            context.set_op_mod(-2);
+            context.set_op_mod(DECIMAL_PLACE_CONSTRUCTION_MODE);
 
             // concert top of stack to float
             let stack_top = context.stack().pop_int().expect(
@@ -27,7 +31,7 @@ pub fn handle_integer<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, c
             context.stack().push(Value::Float(stack_top as f64));
         }
         _ => {
-            context.set_op_mod(0);
+            context.set_op_mod(EXECUTION_MODE);
             handle_execution_mode(context, cmd);
         }
     }

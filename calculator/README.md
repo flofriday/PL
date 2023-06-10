@@ -21,12 +21,12 @@
 | Negation ’~’                                    |     ✔️      |                                                                                         |
 | Integer conversion ’?’                          |     ✔️      |                                                                                         |
 | Copy ’!’                                        |     ✔️      |                                                                                         |
-| Delete ’$’                                      |     📝      |                                                                                         |
-| Apply immediately ’@’                           |     📝      |                                                                                         |
+| Delete ’$’                                      |     ✔️      |                                                                                         |
+| Apply immediately ’@’                           |     ✔️      |                                                                                         |
 | Apply later ’\’’                                |     📝      |                                                                                         |
-| Stack size ’#’                                  |     📝      |                                                                                         |
+| Stack size ’#’                                  |     ✔️      |                                                                                         |
 | Read input ’\’’                                 |     📝      |                                                                                         |
-| Write output ’"’                                |     🚧      |            This is kinda hard to do without passing the stream to the class             |
+| Write output ’"’                                |     📝      |                         |
 | Invalid Char                                    |     📝      |                                                                                         |
 | Tests inside registers                          |     📝      |                                                                                         |
 

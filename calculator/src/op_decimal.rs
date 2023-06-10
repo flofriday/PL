@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 
-use crate::{calculator::Calculator, op_execution::handle_execution_mode, value::Value};
+use crate::{calculator::{Calculator, DECIMAL_PLACE_CONSTRUCTION_MODE, EXECUTION_MODE}, op_execution::handle_execution_mode, value::Value};
 
 pub fn handle_decimal_place_construction_mode<IN: Read, OUT: Write>(
     context: &mut Calculator<IN, OUT>,
@@ -27,10 +27,10 @@ pub fn handle_decimal_place_construction_mode<IN: Read, OUT: Write>(
         '.' => {
             // initialize new float construction
             context.stack().push(Value::Float(0.0));
-            context.set_op_mod(-2);
+            context.set_op_mod(DECIMAL_PLACE_CONSTRUCTION_MODE);
         }
         _ => {
-            context.set_op_mod(0);
+            context.set_op_mod(EXECUTION_MODE);
             handle_execution_mode(context, cmd);
         }
     }
