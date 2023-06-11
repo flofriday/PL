@@ -64,13 +64,15 @@ impl DataStack {
         }
     }
 
-    /// Remove the nth entry from the data stack (counted from the top)
-    pub fn remove(&mut self, n: usize) {
-        if n <= self.values.len() {
-            self.values.remove(n - 1);
-        } else {
-            panic!("Invalid index for deleting entry");
+    /// Deletes the n-th entry of the stack, counted from the top of the stack.
+    /// To delete the top entry n must be 1.
+    /// If n isn't in the range, nothing will be deleted.
+    pub fn delete_at(&mut self, n: usize) {
+        if n > self.values.len() {
+            return;
         }
+
+        self.values.remove(self.values.len() - n);
     }
 
     /// Returns one element from the stack by index

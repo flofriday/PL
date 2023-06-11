@@ -10,6 +10,11 @@ mod out_stream;
 mod register_set;
 mod value;
 
+use std::{
+    env::{self, args},
+    fs,
+};
+
 use crate::{
     calculator::Calculator, cmd_stream::CmdStream, datastack::DataStack, input_stream::InputStream,
     out_stream::OutputStream, register_set::RegisterSet, value::Value,
@@ -33,7 +38,9 @@ fn main() {
     // parser.parse(my_program);
     // println!("{parser}");
 
-    let mut calc = Calculator::new(&my_program);
+    let args: Vec<String> = env::args().collect();
+    let program = fs::read_to_string(args[1].clone()).unwrap();
+    let mut calc = Calculator::new(&program);
     calc.run();
-    println!("{calc}");
+    //println!("{calc}");
 }

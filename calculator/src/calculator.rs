@@ -54,11 +54,11 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         }
     }
 
-    pub fn run(&mut self) -> Value {
+    pub fn run(&mut self) {
         // peeks command, it is actually consumed by repective op mode handlers
         // this design leads to an infinite loop if the character is not handled
         while let Some(cmd) = self.cmd_stream.poll() {
-            println!("cmd: {}", cmd);
+            //println!("cmd: {}", cmd);
             match cmd {
                 ' ' => {
                     self.op_mode = 0;
@@ -73,11 +73,6 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
                     }
                 }
             }
-        }
-        if let Some(val) = self.stack.peek() {
-            return val;
-        } else {
-            panic!("Some error happened. The calculator couldnt produce a result");
         }
     }
 

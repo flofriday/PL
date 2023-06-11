@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 
-use crate::calculator::{INTEGER_CONSTRUCTION_MODE, DECIMAL_PLACE_CONSTRUCTION_MODE};
+use crate::calculator::{DECIMAL_PLACE_CONSTRUCTION_MODE, INTEGER_CONSTRUCTION_MODE};
 use crate::value::Value::Integer;
 use crate::{calculator::Calculator, value::Value};
 
@@ -262,8 +262,8 @@ fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char)
     let len = context.stack().len() as i64;
     if let Some(Integer(val)) = context.stack().pop() {
         if val >= 1 && val <= len {
-            let index = len - val;
-            context.stack().remove(index as usize);
+            let index = val;
+            context.stack().delete_at(index as usize);
         }
     }
 }
@@ -288,7 +288,15 @@ fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: c
 }
 
 fn op_write_output<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
-    todo!()
+    let Some(val) = context.stack().pop() else {
+        return;
+    };
+
+    match val {
+        Value::Float(v) => println!("{v}"),
+        Value::Integer(v) => println!("{v}"),
+        Value::String(v) => println!("{v}"),
+    }
 }
 
 #[cfg(test)]
