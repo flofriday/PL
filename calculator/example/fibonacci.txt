@@ -1,0 +1,6 @@
+(Which fibonacci number do you want? >)" 
+'N
+(") E
+(2! 4! + f@) S
+(s e n # 2- < 1+ $ @) F
+1 1 f@

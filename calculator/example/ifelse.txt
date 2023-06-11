@@ -1,0 +1,4 @@
+((Old enough)") T  
+((Too young)") F
+(Enter your age:)"
+f t ' 17 > 1+ $ @
