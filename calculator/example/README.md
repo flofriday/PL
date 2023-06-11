@@ -93,3 +93,10 @@ This combines the infinite loop example with the if-else example. It defines
 three functions: `p` prints the top of the loop without poping it. `l` is the 
 print-increment-compare-loop and `e` is an empty function, used in this example
 only to end the loop.
+
+## 99bottles.txt
+
+**Output:** The lyrics of [99 Bottles of Beer](https://99-bottles-of-beer.net/lyrics.html)
+
+The formatting is a little bit mangled, because there is no string interpolation
+or string concatenation and the print always adds a newline.
