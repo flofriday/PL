@@ -26,6 +26,7 @@ pub fn handle_execution_mode<IN: Read, OUT: Write>(context: &mut Calculator<IN, 
         '#' => op_stack_size(context, cmd),
         '\'' => op_read_input(context, cmd),
         '"' => op_write_output(context, cmd),
+        ' ' | '\n' | '\t' => {} // Ignore whitespace for convinience
         invalid => panic!("RUNTIME ERROR: Invalid command character '{invalid}'"),
     }
 }
@@ -310,15 +311,15 @@ mod tests {
     fn test_integer_construction() {
         let test_input = String::from("55");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(55));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(55)));
     }
 
     #[test]
     fn test_decimal_construction() {
         let triple = String::from("123.123");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&triple);
-        let result = calc.run();
+        calc.run();
         //assert_abs_diff_eq!(result, 123.123, epsilon = 0.0001);
     }
 
@@ -326,128 +327,128 @@ mod tests {
     fn test_braces() {
         let test_input = String::from("()");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::String("".to_string()));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::String("".to_string())));
     }
 
     #[test]
     fn test_addition() {
         let test_input = String::from("2 3 +");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(5));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(5)));
     }
 
     #[test]
     fn test_subtraction() {
         let test_input = String::from("4 2-");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(2));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
     }
 
     #[test]
     fn test_division() {
         let test_input = String::from("4 2/");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(2));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
     }
 
     #[test]
     fn test_multiplication() {
         let test_input = String::from("4 2*");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(8));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(8)));
     }
 
     #[test]
     fn test_equals() {
         let test_input = String::from("8 8=");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_less_than() {
         let test_input = String::from("7 8<");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_greater_than() {
         let test_input = String::from("8 7>");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_parse_string_concatenation() {
         let test_input = String::from("((.))");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::String("(.)".to_string()));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::String("(.)".to_string())));
     }
 
     #[test]
     fn test_parse_negation() {
         let test_input = String::from("5~");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(-5));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(-5)));
     }
 
     #[test]
     fn test_parse_float_to_integer_conversion() {
         let test_input = String::from("10.0 ?");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(10));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(10)));
     }
 
     #[test]
     fn test_parse_null_check_with_zero() {
         let test_input = String::from("0 _");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_parse_null_check_with_an_empty_string() {
         let test_input = String::from("() _");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_parse_null_check_with_a_float() {
         let test_input = String::from("0.00000000000001 _");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_parse_register_operations() {
         let test_input = String::from("42 A a");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(42));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(42)));
     }
 
     #[test]
     fn test_stack_size() {
         let test_input = String::from("44 4#");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(2));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
     }
 
     // test copy
@@ -455,7 +456,7 @@ mod tests {
     fn test_op_copy() {
         let test_input = String::from("0 1 12 3 4 2!");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(4));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(4)));
     }
 }

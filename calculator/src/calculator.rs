@@ -59,19 +59,19 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         // this design leads to an infinite loop if the character is not handled
         while let Some(cmd) = self.cmd_stream.poll() {
             //println!("cmd: {}", cmd);
-            match cmd {
-                ' ' => {
-                    self.op_mode = 0;
-                    continue;
-                }
-                _ => {
-                    match self.op_mode {
-                        ..=-2 => handle_decimal_place_construction_mode(self, cmd), // decimal place construction
-                        -1 => handle_integer(self, cmd), // integer construction
-                        0 => handle_execution_mode(self, cmd), // execution
-                        _ => handle_string_construction_mode(self, cmd), // string construction
-                    }
-                }
+            //match cmd {
+            /*' ' => {
+                self.op_mode = 0;
+                continue;
+            }
+            _ => {*/
+            match self.op_mode {
+                ..=-2 => handle_decimal_place_construction_mode(self, cmd), // decimal place construction
+                -1 => handle_integer(self, cmd),                            // integer construction
+                0 => handle_execution_mode(self, cmd),                      // execution
+                _ => handle_string_construction_mode(self, cmd),            // string construction
+                                                                             //}
+                                                                             //}
             }
         }
     }
@@ -120,39 +120,71 @@ mod tests {
     fn test_factorial_3() {
         let factorial_of_3 = String::from("3(3!3!1-2!1=()5!(4!4$_1+$@)@2$*)3!3$3!@2$");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&factorial_of_3);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(6));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(6)));
     }
 
     #[test]
     fn test_single() {
         let single = String::from("5.1 12.3+");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&single);
-        let result = calc.run();
-        assert_eq!(result, Value::Float(17.4));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Float(17.4)));
     }
 
     #[test]
     fn test_triple() {
         let triple = String::from("15 2 3 4+*-");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&triple);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(1));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
     fn test_string_and_negation() {
         let my_string = String::from("(123.123)55~");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&my_string);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(-55));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(-55)));
     }
 
     #[test]
     fn test_complex() {
         let complex = String::from("1(8)(9~)(4!4$_1+$@)@");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&complex);
-        let result = calc.run();
-        assert_eq!(result, Value::Integer(8));
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(8)));
+    }
+
+    #[test]
+    fn test_hello_world() {
+        let program = String::from("(Hello World!)");
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&program);
+        calc.run();
+        assert_eq!(
+            calc.stack().peek(),
+            Some(Value::String(String::from("Hello World!")))
+        );
+    }
+
+    #[test]
+    fn test_ifelse() {
+        let fail_program = r#"
+        (1) T  
+        (0) F
+        f t 8 17 > 1+ $ @
+        "#;
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(fail_program);
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(0)));
+
+        let pass_program = r#"
+        (1) T  
+        (0) F
+        f t 18 17 > 1+ $ @
+        "#;
+        let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(pass_program);
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 }

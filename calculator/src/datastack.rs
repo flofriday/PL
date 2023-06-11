@@ -201,28 +201,25 @@ mod tests {
     }
 
     #[test]
-    fn test_remove() {
+    fn test_delete_at_top() {
         let mut stack = DataStack::new();
+        stack.push(Value::Integer(13));
+        stack.delete_at(1);
 
-        stack.push(Value::Integer(10));
-        stack.push(Value::Float(20.5));
-        stack.push(Value::String("Hello".into()));
-
-        stack.remove(2);
-
-        assert_eq!(stack.pop(), Some(Value::String("Hello".into())));
-        assert_eq!(stack.pop(), Some(Value::Integer(10)));
-        assert_eq!(stack.pop(), None);
+        assert_eq!(stack.len(), 0);
     }
 
     #[test]
-    #[should_panic(expected = "Invalid index for deleting entry")]
-    fn test_remove_invalid_index() {
+    fn test_delete_at_middle() {
         let mut stack = DataStack::new();
+        stack.push(Value::Integer(1));
+        stack.push(Value::Integer(2));
+        stack.push(Value::Integer(3));
+        stack.delete_at(2);
 
-        stack.push(Value::Integer(10));
-
-        stack.remove(2);
+        assert_eq!(stack.len(), 2);
+        assert_eq!(stack.pop_int(), Some(3));
+        assert_eq!(stack.pop_int(), Some(1));
     }
 
     #[test]
