@@ -88,8 +88,8 @@ impl RegisterSet {
 
 impl fmt::Display for RegisterSet {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (register, value) in &self.registers {
-            write!(f, "Register {}: {}\n", register, value)?;
+        for reg in 'a'..='z' {
+            write!(f, "\t {}: {}\n", reg, self.read(reg))?;
         }
         Ok(())
     }
