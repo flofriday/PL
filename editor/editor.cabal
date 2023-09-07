@@ -7,9 +7,9 @@ cabal-version: 1.12
 name:           editor
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/editor#readme>
-homepage:       https://github.com/githubuser/editor#readme
-bug-reports:    https://github.com/githubuser/editor/issues
-author:         Author name here
+homepage:       https://github.com/flofriday/PL#readme
+bug-reports:    https://github.com/flofriday/PL/issues
+author:         ...
 maintainer:     example@example.com
 copyright:      2023 Author name here
 license:        BSD3
@@ -21,12 +21,12 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/editor
+  location: https://github.com/flofriday/PL
 
 library
   exposed-modules:
+      Highlighting
       Lib
-      , Highlighting
   other-modules:
       Paths_editor
   hs-source-dirs:
@@ -34,12 +34,9 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-      , gi-gio
-      , gi-gtk
-      , gi-glib
-      , gi-gdk
-      , haskell-gi-base
-      , text
+    , gi-gtk
+    , haskell-gi-base
+    , text
   default-language: Haskell2010
 
 executable editor-exe
@@ -53,10 +50,7 @@ executable editor-exe
   build-depends:
       base >=4.7 && <5
     , editor
-    , gi-gio
     , gi-gtk
-    , gi-glib
-    , gi-gdk
     , haskell-gi-base
     , text
 
@@ -71,4 +65,7 @@ test-suite editor-test
   build-depends:
       base >=4.7 && <5
     , editor
+    , gi-gtk
+    , haskell-gi-base
+    , text
   default-language: Haskell2010

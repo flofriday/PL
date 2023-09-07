@@ -21,12 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- gi-gio
 - gi-gtk
-- gi-glib
-- gi-gdk
 - haskell-gi-base
 - text
+#- gi-gio
+#- gi-glib
+#- gi-gdk
 
 ghc-options:
 - -Wall
