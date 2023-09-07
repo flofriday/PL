@@ -1,8 +1,8 @@
 name:                editor
 version:             0.1.0.0
-github:              "githubuser/editor"
+github:              "flofriday/PL"
 license:             BSD3
-author:              "Author name here"
+author:              "..."
 maintainer:          "example@example.com"
 copyright:           "2023 Author name here"
 
@@ -21,6 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- gi-gio
+- gi-gtk
+- gi-glib
+- gi-gdk
+- haskell-gi-base
+- text
 
 ghc-options:
 - -Wall
