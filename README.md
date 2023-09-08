@@ -30,7 +30,20 @@ extension, but you have to [enable clippy manually](https://users.rust-lang.org/
 
 [Assignment2](https://tuwel.tuwien.ac.at/pluginfile.php/3542105/mod_folder/content/0/aufgabe2.pdf)
 
-_Not yet implemented_
+### Build and Run
+
+```bash
+cd interpreter
+python3 -m venv venv # only the first time
+source venv/bin/activate
+pip install -r requirements.txt
+python bunt.py
+```
+
+### Development
+
+We are using [black](https://github.com/psf/black) to format the code. 
+
 
 ## Editor
 
