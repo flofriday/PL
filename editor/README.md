@@ -11,7 +11,7 @@ GTK is available through haskell-gi, a haskell binding library, which is require
 
 - Install GHCup (https://www.haskell.org/ghcup/) 
   - GHCup makes it easy to manage your entire Haskell development environment (GHC, stack, cabal, HLS)
-- Using GHCup, install Stack and select the latest version (`2.11.1`)
+- Using GHCup (with `ghcup tui`), install Stack and select the latest version (`2.11.1`)
 - Install the requirements for haskell-gi (https://github.com/haskell-gi/haskell-gi)
 - Run `stack run` in the cmdline to build and execute the application
 
