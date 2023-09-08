@@ -3,8 +3,6 @@
 
 module UIComponents where
 
-import Data.GI.Base
-import qualified GI.Gtk as Gtk
 import qualified FileOperations
 
 -- TODO: Add UI Components
