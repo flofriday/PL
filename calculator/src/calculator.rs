@@ -170,7 +170,7 @@ mod tests {
     #[test]
     fn test_ifelse() {
         let fail_program = r#"
-        (1) T  
+        (1) T
         (0) F
         f t 8 17 > 1+ $ @
         "#;
@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(calc.stack().peek(), Some(Value::Integer(0)));
 
         let pass_program = r#"
-        (1) T  
+        (1) T
         (0) F
         f t 18 17 > 1+ $ @
         "#;

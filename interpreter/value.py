@@ -7,12 +7,14 @@ class BuntValue(ABC):
     def string(self) -> str:
         pass
 
+
 @dataclass
 class IntValue(BuntValue):
     value: int
 
     def string(self) -> str:
         return str(self.value)
+
 
 @dataclass
 class BoolValue(BuntValue):
@@ -27,4 +29,4 @@ class ListValue(BuntValue):
     value: list[BuntValue]
 
     def string(self) -> str:
-        return "(" + " ".join(map(lambda i: i.string(), self.value)) +")"
+        return "(" + " ".join(map(lambda i: i.string(), self.value)) + ")"

@@ -1,79 +1,90 @@
 import unittest
 
-from bunt_token import TLeftParan, TIdentifier, TRightParan, TInteger, TEOF
-from location import Location
 from scanner import Scanner
 
-class TestScanner(unittest.TestCase):
 
+class TestScanner(unittest.TestCase):
     def test_simple_arithmetic_operations(self):
         scanner = Scanner("(+ 2 4)")
         tokens = scanner.scan()
         self.assertEqual(len(tokens), 6)
-        self.assertEqual(tokens[0].__class__.__name__, 'TLeftParan')
-        self.assertEqual(tokens[1].__class__.__name__, 'TIdentifier')
-        self.assertEqual(tokens[1].name, '+')
-        self.assertEqual(tokens[2].__class__.__name__, 'TInteger')
+        self.assertEqual(tokens[0].__class__.__name__, "TLeftParan")
+        self.assertEqual(tokens[1].__class__.__name__, "TIdentifier")
+        self.assertEqual(tokens[1].name, "+")
+        self.assertEqual(tokens[2].__class__.__name__, "TInteger")
         self.assertEqual(tokens[2].number, 2)
-        self.assertEqual(tokens[3].__class__.__name__, 'TInteger')
+        self.assertEqual(tokens[3].__class__.__name__, "TInteger")
         self.assertEqual(tokens[3].number, 4)
-        self.assertEqual(tokens[4].__class__.__name__, 'TRightParan') # Adjust with correct class name for right parenthesis
-        self.assertEqual(tokens[5].__class__.__name__, 'TEOF')
+        self.assertEqual(
+            tokens[4].__class__.__name__, "TRightParan"
+        )  # Adjust with correct class name for right parenthesis
+        self.assertEqual(tokens[5].__class__.__name__, "TEOF")
 
     def test_list_operations(self):
         scanner = Scanner("(print (list 1 2 3))")
         tokens = scanner.scan()
         self.assertEqual(len(tokens), 10)
-        self.assertEqual(tokens[0].__class__.__name__, 'TLeftParan')
-        self.assertEqual(tokens[1].__class__.__name__, 'TIdentifier')
-        self.assertEqual(tokens[1].name, 'print')
-        self.assertEqual(tokens[2].__class__.__name__, 'TLeftParan')
-        self.assertEqual(tokens[3].__class__.__name__, 'TIdentifier')
-        self.assertEqual(tokens[3].name, 'list')
-        self.assertEqual(tokens[4].__class__.__name__, 'TInteger')
+        self.assertEqual(tokens[0].__class__.__name__, "TLeftParan")
+        self.assertEqual(tokens[1].__class__.__name__, "TIdentifier")
+        self.assertEqual(tokens[1].name, "print")
+        self.assertEqual(tokens[2].__class__.__name__, "TLeftParan")
+        self.assertEqual(tokens[3].__class__.__name__, "TIdentifier")
+        self.assertEqual(tokens[3].name, "list")
+        self.assertEqual(tokens[4].__class__.__name__, "TInteger")
         self.assertEqual(tokens[4].number, 1)
-        self.assertEqual(tokens[5].__class__.__name__, 'TInteger')
+        self.assertEqual(tokens[5].__class__.__name__, "TInteger")
         self.assertEqual(tokens[5].number, 2)
-        self.assertEqual(tokens[6].__class__.__name__, 'TInteger')
+        self.assertEqual(tokens[6].__class__.__name__, "TInteger")
         self.assertEqual(tokens[6].number, 3)
-        self.assertEqual(tokens[7].__class__.__name__, 'TRightParan') # Adjust with correct class name for right parenthesis
-        self.assertEqual(tokens[8].__class__.__name__, 'TRightParan') # Adjust with correct class name for right parenthesis
-        self.assertEqual(tokens[9].__class__.__name__, 'TEOF')
+        self.assertEqual(
+            tokens[7].__class__.__name__, "TRightParan"
+        )  # Adjust with correct class name for right parenthesis
+        self.assertEqual(
+            tokens[8].__class__.__name__, "TRightParan"
+        )  # Adjust with correct class name for right parenthesis
+        self.assertEqual(tokens[9].__class__.__name__, "TEOF")
 
     def test_multiline_input(self):
-        scanner = Scanner("""
+        scanner = Scanner(
+            """
         (let x 42)
         (print (* x 2))
-        """)
+        """
+        )
         tokens = scanner.scan()
         self.assertEqual(len(tokens), 14)
-        self.assertEqual(tokens[13].__class__.__name__, 'TEOF')
+        self.assertEqual(tokens[13].__class__.__name__, "TEOF")
 
     def test_comments(self):
-        scanner = Scanner("""
+        scanner = Scanner(
+            """
         # This is a comment line
         (print 42) # Inline comment
-        """)
+        """
+        )
         tokens = scanner.scan()
         self.assertEqual(len(tokens), 5)
-        self.assertEqual(tokens[4].__class__.__name__, 'TEOF')
+        self.assertEqual(tokens[4].__class__.__name__, "TEOF")
 
     def test_complex_expression_with_comments_and_multiline(self):
-        scanner = Scanner("""
+        scanner = Scanner(
+            """
         # Define a function using lambda
-        (let add 
-            (lambda (a b) 
+        (let add
+            (lambda (a b)
                 (+ a b)
             ) # End of function definition
         )
         (print # This is a print with arguments to lines lower
-                 # then this line 
-        
+                 # then this line
+
             (add 3 7))
-        """)
+        """
+        )
         tokens = scanner.scan()
         self.assertEqual(len(tokens), 25)
-        self.assertEqual(tokens[24].__class__.__name__, 'TEOF')
+        self.assertEqual(tokens[24].__class__.__name__, "TEOF")
+
 
 #     def test_complex_input(self):
 #         input_script = """
@@ -120,5 +131,5 @@ class TestScanner(unittest.TestCase):
 #
 #         self.assertEqual(tokens, expected_tokens)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

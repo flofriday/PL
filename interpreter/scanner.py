@@ -4,7 +4,7 @@ from bunt_token import TEOF, TIdentifier, TInteger, TLeftParan, Token, TRightPar
 from location import Location
 from typing import List, Optional, Callable
 
-_whitespaces = [' ', '\n', '\t', '\r']
+_whitespaces = [" ", "\n", "\t", "\r"]
 
 
 @dataclass
@@ -39,33 +39,32 @@ class Scanner:
         while self._skip_whitespace() or self._skip_comments():
             pass
 
-        curr_location = ScanPos(line=self.curr_loc.line,
-                                col=self.curr_loc.col)
+        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
         token = None
 
         match self.curr_char:
             case None:
                 token = TEOF(location=self._span_location(curr_location))
-            case '(':
+            case "(":
                 token = TLeftParan(location=self._span_location(curr_location))
-            case ')':
+            case ")":
                 token = TRightParan(location=self._span_location(curr_location))
             case _:
                 if _is_int_lit(self.curr_char):
                     token = TInteger(
                         number=self._read_int(),
-                        location=self._span_location(curr_location)
+                        location=self._span_location(curr_location),
                     )
                 elif _is_valid_identifier_start(self.curr_char):
                     token = TIdentifier(
                         name=self._read_identifier(),
-                        location=self._span_location(curr_location)
+                        location=self._span_location(curr_location),
                     )
                 else:
                     raise BuntError(
                         header="Invalid Symbol",
                         location=self._span_location(curr_location),
-                        message=f"The character '{self.curr_char}' isn't a valid Bunt symbol"
+                        message=f"The character '{self.curr_char}' isn't a valid Bunt symbol",
                     )
 
         self._read_char()
@@ -74,33 +73,31 @@ class Scanner:
     # reads integer value or fails if it is an invalid integer
     # Note: self.curr_char must be a valid integer at the time of calling
     def _read_int(self) -> int:
-        curr_location = ScanPos(line=self.curr_loc.line,
-                                col=self.curr_loc.col)
+        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
         lit = self._read_while(_is_int_lit)
 
         # raise error if integer is not separated
-        if self._peek_char() not in ['(', ')'] + _whitespaces:
+        if self._peek_char() not in ["(", ")"] + _whitespaces:
             raise BuntError(
                 "Integer Parsing Error",
                 self._span_location(curr_location),
                 f"Tried to parse integer... did not expect '{self._peek_char()}'"
-                f"Have you forgotten a space after {lit}?"
+                f"Have you forgotten a space after {lit}?",
             )
 
         return int(lit, 10)
 
     def _read_identifier(self) -> str:
-        curr_location = ScanPos(line=self.curr_loc.line,
-                                col=self.curr_loc.col)
+        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
         lit = self._read_while(_is_valid_identifier_part)
 
         # raise error if integer is not separated
-        if self._peek_char() not in ['(', ')'] + _whitespaces:
+        if self._peek_char() not in ["(", ")"] + _whitespaces:
             raise BuntError(
                 "Identifier Parsing Error",
                 self._span_location(curr_location),
                 f"Incorrect identifier! '{self._peek_char}' cannot be part of an identifier."
-                f"Have you forgotten a space after {lit}?"
+                f"Have you forgotten a space after {lit}?",
             )
 
         return lit
@@ -122,10 +119,10 @@ class Scanner:
         return detect
 
     def _skip_comments(self) -> bool:
-        if self.curr_char != '#':
+        if self.curr_char != "#":
             return False
 
-        while self.curr_char != '\n' and self.curr_char is not None:
+        while self.curr_char != "\n" and self.curr_char is not None:
             self._read_char()
 
         self._read_char()
@@ -145,7 +142,7 @@ class Scanner:
         else:
             self.curr_char = self.input[self.readpos]
 
-            if self.curr_char == '\n':
+            if self.curr_char == "\n":
                 self.curr_loc.line += 1
                 self.curr_loc.col = -1
 
@@ -155,7 +152,7 @@ class Scanner:
 
 
 def _is_valid_identifier_start(ch: chr) -> bool:
-    return ('a' <= ch <= 'z') or ('A' <= ch <= 'Z') or ch in "+-!$&*^_~:/%"
+    return ("a" <= ch <= "z") or ("A" <= ch <= "Z") or ch in "+-!$&*^_~:/%"
 
 
 def _is_valid_identifier_part(ch: chr) -> bool:
@@ -163,4 +160,4 @@ def _is_valid_identifier_part(ch: chr) -> bool:
 
 
 def _is_int_lit(ch: chr) -> bool:
-    return (ch >= '0' and ch <= '9')
+    return ch >= "0" and ch <= "9"

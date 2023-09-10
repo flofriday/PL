@@ -111,7 +111,7 @@ expr = '(',  func, {expr}, ')'
      | 'true' | 'false'
      | identifier
      ;
-     
+
 identifer = (letter), {letter | digit};
 ```
 

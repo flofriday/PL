@@ -39,7 +39,7 @@ This is taken from the "Example" section of the assignment.
 
 **Output:** `6`
 
-This example computes the factorial of three and was taken from the appendix of 
+This example computes the factorial of three and was taken from the appendix of
 the example.
 
 ## infiniteloop.txt
@@ -47,17 +47,17 @@ the example.
 **Output:** 1 2 3 ...
 
 This is a simple example that counts up in an infinite loop. Since there are no
-structured loops this code uses the apply immediate operation to modify its 
+structured loops this code uses the apply immediate operation to modify its
 own source code.
 
 ### Explanation
 `("1+2!@) 1 2! @`
 
 First is a string, but since it uses some kind of recursion, lets ignore that
-one. Next we push 1 on the stack. With `2!` we copy the string onto the top of 
+one. Next we push 1 on the stack. With `2!` we copy the string onto the top of
 the stack and with and `@` we pop it and move it to the execution stream.
 
-When executing the string, we print the counter with `"`, increment it by one 
+When executing the string, we print the counter with `"`, increment it by one
 with `1+` and than load and execute the string again with `2!@`.
 
 ### ifelse.txt
@@ -77,10 +77,10 @@ In the first two lines we define two "functions" for the true and false case.
 The third line prompts the user for their age.
 The last line first pushes the functions onto the stack. Then it reads the user
 input and compares it to 17 so that adult persons result in the following stack:
-`[ F | T | 1 ]` and now we add one to the one and therefore delete the false 
-function from the stack and therefore only the true function is on the stack 
+`[ F | T | 1 ]` and now we add one to the one and therefore delete the false
+function from the stack and therefore only the true function is on the stack
 which we execute with `@`. If the condition is false we delete the true function
-and execute the wrong case. 
+and execute the wrong case.
 
 ## hundred.txt
 
@@ -89,8 +89,8 @@ and execute the wrong case.
 Counts up to hundred and than stops, no infinite loop.
 
 ### Explaination
-This combines the infinite loop example with the if-else example. It defines 
-three functions: `p` prints the top of the loop without poping it. `l` is the 
+This combines the infinite loop example with the if-else example. It defines
+three functions: `p` prints the top of the loop without poping it. `l` is the
 print-increment-compare-loop and `e` is an empty function, used in this example
 only to end the loop.
 

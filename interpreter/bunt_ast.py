@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from location import Location
-from typing import Any
 
 
 # Visitor prototype
@@ -15,6 +14,10 @@ class AstNode(ABC):
 
     @abstractmethod
     def location(self) -> Location:
+        pass
+
+    @abstractmethod
+    def dump(self, indent: int) -> str:
         pass
 
 
@@ -37,9 +40,17 @@ class ProgramNode(AstNode):
             self.expressions[0].location(), self.expressions[-1].location()
         )
 
+    def dump(self, indent: int = 0) -> str:
+        space = " " * indent
+        dumptext = space + "ProgramNode(\n"
+        for expr in self.expressions:
+            dumptext += expr.dump(indent + 2) + "\n"
+        dumptext += space + ")"
+        return dumptext
+
 
 class IdentifierNode(ExpressionNode):
-    def __init__(self, name: list[Any], location: Location):
+    def __init__(self, name: str, location: Location):
         self.name = name
         self._location = location
 
@@ -49,10 +60,14 @@ class IdentifierNode(ExpressionNode):
     def location(self) -> Location:
         return self._location
 
+    def dump(self, indent: int = 0) -> str:
+        space = " " * indent
+        return space + f"IdentifierNode({self.name})"
+
 
 class ListNode(ExpressionNode):
-    def __init__(self, value: list[Any], location: Location):
-        self.value = value
+    def __init__(self, expressions: list[ExpressionNode], location: Location):
+        self.expressions = expressions
         self._location = location
 
     def visit(self, visitor: Visitor):
@@ -60,6 +75,14 @@ class ListNode(ExpressionNode):
 
     def location(self) -> Location:
         return self._location
+
+    def dump(self, indent: int = 0) -> str:
+        space = " " * indent
+        dumptext = space + "ListNode(\n"
+        for expr in self.expressions:
+            dumptext += expr.dump(indent + 2) + "\n"
+        dumptext += space + ")"
+        return dumptext
 
 
 class IntNode(ExpressionNode):
@@ -73,6 +96,10 @@ class IntNode(ExpressionNode):
     def location(self) -> Location:
         return self._location
 
+    def dump(self, indent: int = 0) -> str:
+        space = " " * indent
+        return space + f"IntNode({self.value})"
+
 
 class BoolNode(ExpressionNode):
     def __init__(self, value: bool, location: Location):
@@ -84,6 +111,10 @@ class BoolNode(ExpressionNode):
 
     def location(self) -> Location:
         return self._location
+
+    def dump(self, indent: int = 0) -> str:
+        space = " " * indent
+        return space + f"BoolNode({self.value})"
 
 
 # Visitor abstract methods for all nodes

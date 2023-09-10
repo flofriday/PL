@@ -19,10 +19,10 @@ You can run all the tests with `cargo test`.
 
 ### Development
 
-We use `cargo fmt` for formatting and `cargo clippy` for linting. 
+We use `cargo fmt` for formatting and `cargo clippy` for linting.
 clippy can also fix many cases by itself when invoked with `cargo clippy --fix`.
 
-For VSCode you can use the [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) 
+For VSCode you can use the [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
 extension, but you have to [enable clippy manually](https://users.rust-lang.org/t/how-to-use-clippy-in-vs-code-with-rust-analyzer/41881).
 
 
@@ -42,7 +42,7 @@ python bunt.py
 
 ### Development
 
-We are using [black](https://github.com/psf/black) to format the code. 
+We are using [black](https://github.com/psf/black) to format the code.
 
 
 ## Editor
