@@ -31,3 +31,5 @@ class Environment(dict):
             raise KeyError("")
 
         self.variables[name] = value
+
+    # FIXME: Some debugging code to print environments

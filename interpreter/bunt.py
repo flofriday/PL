@@ -28,7 +28,7 @@ def main():
 
 def interpret_repl(args):
     print("The Bunt Interpreter 🎨")
-    print("Written with  ❤️  by Adi, Flo, Johannes and Paul")
+    print("Written with ❤️  by Adi, Flo, Johannes and Paul")
     print()
     env = generate_global_env()
     while True:
@@ -65,7 +65,6 @@ def interpret_repl(args):
             print(value.string())
 
         except BuntErrors as errors:
-            print(errors)
             for error in errors.errors:
                 print(error.formatted(source))
             continue
@@ -73,6 +72,9 @@ def interpret_repl(args):
         except BuntError as error:
             print(error.formatted(source))
             continue
+
+        except EOFError:
+            exit(0)
 
 
 def generate_global_env() -> Environment:
@@ -106,7 +108,6 @@ def interpret_file(filename: str, args):
         interpreter.exec(ast)
 
     except BuntErrors as errors:
-        print(errors)
         for error in errors.errors:
             print(error.formatted(source))
         exit(1)

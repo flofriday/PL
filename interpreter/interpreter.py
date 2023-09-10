@@ -24,13 +24,14 @@ class Interpreter(NodeVisitor[BuntValue]):
         for expression in node.expressions:
             last_value = expression.visit(self)
 
-        # FIXME: is that right?
         return last_value
 
     def by_identifier(self, node: IdentifierNode) -> BuntValue:
         if node.name not in self.env:
             raise BuntError(
-                "Unknown variable", node.location(), "This variable does not exist"
+                "Unknown variable",
+                node.location(),
+                "No variable with this name exists",
             )
 
         return self.env[node.name]
@@ -43,6 +44,10 @@ class Interpreter(NodeVisitor[BuntValue]):
         func = node.expressions[0].visit(self)
         args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
 
+        # FIXME: Check arity (consider the builtin list function is vararg)
+
+        # FIXME: When entering a new parenthesis a new environment is created
+
         if isinstance(func, BuiltinFuncValue):
             func: BuiltinFuncValue = func
             if func.arity < len(args):
@@ -51,8 +56,12 @@ class Interpreter(NodeVisitor[BuntValue]):
                     node.location(),
                     f"Arity is {func.arity} but {len(args)} arguments were given",
                 )
-            return func.func(args)
+            return func.func(args, self)
 
+        # FIXME: Implement FuncValue (might be hard)
+
+        # FIXME: Propper error that one tried to call something that isn't a
+        # function.
         raise NotImplementedError()
 
     def by_int(self, node: IntNode) -> BuntValue:

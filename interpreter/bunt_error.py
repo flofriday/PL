@@ -18,7 +18,6 @@ class BuntError(Exception):
     def __init__(
         self, header: str, location: Location, message: str, tip: Optional[str] = None
     ):
-        super().__init__(f"{header}\n{message}")
         self.header = header
         self.location = location
         self.message = message
@@ -53,6 +52,8 @@ class BuntError(Exception):
             content += "Multiline highlights are not yet implemented\n"
 
         content += "\n"
+        # FIXME: We could insert new lines into the message so that we never
+        # exceed 80 columns.
         content += self.message
         content += "\n"
         if self.tip is not None:

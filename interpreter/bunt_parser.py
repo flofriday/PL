@@ -65,8 +65,13 @@ class Parser:
             return self.parse_list()
 
         self.errors.append(
-            BuntError("Invalid Syntax", self.current_token.location, "TODO")
+            BuntError(
+                "Invalid Syntax",
+                self.current_token.location,
+                "This closing parenthesis doesn't have a matching opening one.",
+            )
         )
+        self.advance()
 
     def parse_list(self) -> ListNode:
         left_paren = self.current_token
@@ -82,7 +87,8 @@ class Parser:
                 BuntError(
                     "Invalid Syntax",
                     self.current_token.location,
-                    "Missing right parentesis",
+                    "I reached the end of the input before all parenthesis were closed.",
+                    tip="Just add some at the end and hope for the best ;)",
                 )
             )
             # There is nothing more to parse so let's return all errors
@@ -93,10 +99,3 @@ class Parser:
         return ListNode(
             expressions, Location.merge(left_paren.location, right_paren.location)
         )
-
-
-if __name__ == "__main__":
-    source_code = "(+ 2 (* 3 4))"
-    parser = Parser()
-    ast = parser.parse()
-    print(ast.node, ast.error)

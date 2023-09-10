@@ -14,6 +14,7 @@ class BuntValue(ABC):
 class IntValue(BuntValue):
     value: int
 
+    # FIXME: This name isn't quite that good.
     def string(self) -> str:
         return str(self.value)
 
@@ -46,10 +47,10 @@ class FuncValue(BuntValue):
 @dataclass
 class BuiltinFuncValue(BuntValue):
     arity: int
-    # The arguements are the real arguments to the funciton, the environment and the interpretr
+    # The arguements are the real arguments to the function and the interpreter
     # We cannot type it here because of circular dependencies
     # FIXME: Fix later
-    func: Callable[[list[BuntValue], Any, Any], BuntValue]
+    func: Callable[[list[BuntValue], Any], BuntValue]
 
     def string(self) -> str:
         return f"<Builtin Function> Arity: {self.arity}"
