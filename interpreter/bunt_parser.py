@@ -7,7 +7,7 @@ from bunt_token import (
     TRightParan,
 )
 from bunt_ast import ExpressionNode, IdentifierNode, IntNode
-from ast import ProgramNode
+from bunt_ast import ProgramNode
 from bunt_error import BuntErrors, BuntError
 from location import Location
 

@@ -12,6 +12,9 @@ class Token(ABC):
     def literal(self) -> str:
         """Return the text of the token"""
 
+    def __repr__(self):
+        return f"Token: '{self.literal()}' at {self.location}"
+
     def location(self) -> Location:
         self.location
 
