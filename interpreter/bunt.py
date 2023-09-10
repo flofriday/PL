@@ -2,6 +2,7 @@ import argparse
 
 from scanner import Scanner
 from bunt_parser import Parser
+from bunt_error import BuntError, BuntErrors
 from environment import Environment
 from interpreter import Interpreter
 
@@ -30,17 +31,27 @@ def interpret_repl():
 
 def interpret_file(filename: str):
     with open(filename) as f:
-        input = f.read()
+        source = f.read()
 
-    scanner = Scanner()
-    tokens = scanner.scan(input)
+    try:
+        scanner = Scanner(source)
+        tokens = scanner.scan()
 
-    parser = Parser()
-    ast = parser.parse(tokens)
+        parser = Parser(tokens)
+        ast = parser.parse()
 
-    globalenv = Environment()
-    interpreter = Interpreter(globalenv)
-    interpreter.exec(ast)
+        globalenv = Environment()
+        interpreter = Interpreter(globalenv)
+        interpreter.exec(ast)
 
+    except BuntErrors as errors:
+        for error in errors.errors:
+            error.print(source)
+            print()
+        exit(1)
 
+    except BuntError as error:
+        error.print(source)
+        exit(1)
+        
 main()
