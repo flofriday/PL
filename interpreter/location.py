@@ -9,6 +9,9 @@ class Location:
     endline: int
     endcol: int
 
+    def __repr__(self):
+        return f"Location({self.startline}, {self.startcol}, {self.endline}, {self.endcol})"
+
     @staticmethod
     def merge(begin: Self, end: Self):
         startline = min(begin.startline, end.startline)

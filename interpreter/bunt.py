@@ -14,13 +14,14 @@ def main():
     )
 
     parser.add_argument("filename", nargs="?")  # positional argument
+    parser.add_argument("--dump-token")
     parser.add_argument("--dump-ast")
     args = parser.parse_args()
 
     if args.filename is None:
         interpret_repl()
     else:
-        interpret_file(args.filename)
+        interpret_file(args.filename, args)
 
 
 def interpret_repl():
@@ -29,7 +30,7 @@ def interpret_repl():
     pass
 
 
-def interpret_file(filename: str):
+def interpret_file(filename: str, args):
     with open(filename) as f:
         source = f.read()
 
@@ -37,6 +38,11 @@ def interpret_file(filename: str):
         scanner = Scanner(source)
         tokens = scanner.scan()
 
+        if args.dump_token:
+            print(tokens)
+            exit(0)
+
+        #exit(0)
         parser = Parser(tokens)
         ast = parser.parse()
 
