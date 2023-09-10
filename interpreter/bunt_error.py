@@ -2,6 +2,11 @@ from dataclasses import dataclass
 from location import Location
 from typing import Optional
 
+# ANSI escape codes for text color
+RED = "\033[91m"
+CYAN = "\033[96m"
+RESET = "\033[0m"  # Reset text color to default
+
 
 @dataclass
 class BuntError(Exception):
@@ -20,8 +25,17 @@ class BuntError(Exception):
         self.tip = tip
 
     def formatted(self, sourcecode: str) -> str:
-        # FIXME: add colors
-        content = "-- " + self.header + " " + ("-" * (80 - len(self.header) - 4))
+        content = (
+            CYAN
+            + "\n"
+            + "\n"
+            + "-- "
+            + self.header
+            + " "
+            + ("-" * (80 - len(self.header) - 4))
+            + RESET
+            + "\n"
+        )
         content += "\n"
 
         # Print code highlight
@@ -30,12 +44,16 @@ class BuntError(Exception):
             content += sourcelines[self.location.startline - 1] + "\n"
             content += " " * (self.location.startcol - 1)
             content += (
-                "^" * (self.location.endcol + 1 - self.location.startcol)
-            ) + "\n"
+                (RED + "^" * (self.location.endcol + 1 - self.location.startcol))
+                + RESET
+                + "\n"
+            )
         else:
             # FIXME: Implement
             content += "Multiline highlights are not yet implemented\n"
 
+        content += "\n"
+        content += self.message
         content += "\n"
         if self.tip is not None:
             content += f"Tip: {self.tip}\n"

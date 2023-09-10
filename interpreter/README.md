@@ -53,7 +53,7 @@ To create an anonymous function, the lambda keyword can be used:
 
 ```lisp
 # Fancy way to square 3
-((lambda (a) (a * a)) 3)
+((lambda (a) (* a a)) 3)
 ```
 
 ## Variables

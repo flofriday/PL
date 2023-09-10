@@ -134,6 +134,8 @@ class Scanner:
         return Location(start.line, start.col, self.curr_loc.line, self.curr_loc.col)
 
     def _peek_char(self) -> Optional[chr]:
+        if self.readpos >= len(self.input):
+            return "\n"
         return self.input[self.readpos]
 
     def _read_char(self):

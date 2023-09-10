@@ -1,10 +1,12 @@
 import argparse
+from builtin import add_builtin_functions
 
 from scanner import Scanner
 from bunt_parser import Parser
 from bunt_error import BuntError, BuntErrors
 from environment import Environment
 from interpreter import Interpreter
+from bunt_token import TRightParan, TLeftParan
 
 
 def main():
@@ -19,15 +21,64 @@ def main():
     args = parser.parse_args()
 
     if args.filename is None:
-        interpret_repl()
+        interpret_repl(args)
     else:
         interpret_file(args.filename, args)
 
 
-def interpret_repl():
-    print("Not implemented")
-    exit(1)
-    pass
+def interpret_repl(args):
+    print("The Bunt Interpreter 🎨")
+    print("Written with  ❤️  by Adi, Flo, Johannes and Paul")
+    print()
+    env = generate_global_env()
+    while True:
+        try:
+            source = input(">>> ")
+            scanner = Scanner(source)
+            tokens = scanner.scan()
+
+            # Keep reeding if there are more left parenthesis tokens than right
+            # ones.
+            while sum(1 for t in tokens if isinstance(t, TLeftParan)) > sum(
+                1 for t in tokens if isinstance(t, TRightParan)
+            ):
+                tokens = tokens[:-1]
+                source_line = "\n" + input("... ")
+                source += source_line
+                scanner = Scanner(source_line)
+                tokens += scanner.scan()
+
+            if args.dump_token:
+                for token in tokens:
+                    print(token)
+                continue
+
+            parser = Parser(tokens)
+            ast = parser.parse()
+
+            if args.dump_ast:
+                print(ast.dump())
+                continue
+
+            interpreter = Interpreter(env)
+            value = interpreter.exec(ast)
+            print(value.string())
+
+        except BuntErrors as errors:
+            print(errors)
+            for error in errors.errors:
+                print(error.formatted(source))
+            continue
+
+        except BuntError as error:
+            print(error.formatted(source))
+            continue
+
+
+def generate_global_env() -> Environment:
+    env = Environment(None)
+    add_builtin_functions(env)
+    return env
 
 
 def interpret_file(filename: str, args):
@@ -50,19 +101,18 @@ def interpret_file(filename: str, args):
             print(ast.dump())
             exit(0)
 
-        globalenv = Environment()
+        globalenv = generate_global_env()
         interpreter = Interpreter(globalenv)
         interpreter.exec(ast)
 
     except BuntErrors as errors:
         print(errors)
         for error in errors.errors:
-            error.print(source)
-            print()
+            print(error.formatted(source))
         exit(1)
 
     except BuntError as error:
-        error.print(source)
+        print(error.formatted(source))
         exit(1)
 
 

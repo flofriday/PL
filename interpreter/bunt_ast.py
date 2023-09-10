@@ -1,15 +1,19 @@
 from abc import ABC, abstractmethod
 from location import Location
+from typing import TypeVar, Generic
+
+# Visitor abstract methods for all nodes
+VT = TypeVar("VT")
+T = TypeVar("T")
 
 
-# Visitor prototype
-class Visitor(ABC):
+class NodeVisitor(ABC, Generic[VT]):
     pass
 
 
 class AstNode(ABC):
     @abstractmethod
-    def visit(self, visitor: Visitor):
+    def visit(self, visitor: NodeVisitor[T]) -> T:
         pass
 
     @abstractmethod
@@ -29,8 +33,8 @@ class ProgramNode(AstNode):
     def __init__(self, expressions: list[ExpressionNode]):
         self.expressions = expressions
 
-    def visit(self, visitor: Visitor):
-        visitor.by_prog(self)
+    def visit(self, visitor: NodeVisitor[T]) -> T:
+        return visitor.by_prog(self)
 
     def location(self) -> Location:
         if self.expressions == []:
@@ -54,8 +58,8 @@ class IdentifierNode(ExpressionNode):
         self.name = name
         self._location = location
 
-    def visit(self, visitor: Visitor):
-        visitor.by_ident(self)
+    def visit(self, visitor: NodeVisitor[T]) -> T:
+        return visitor.by_identifier(self)
 
     def location(self) -> Location:
         return self._location
@@ -70,8 +74,8 @@ class ListNode(ExpressionNode):
         self.expressions = expressions
         self._location = location
 
-    def visit(self, visitor: Visitor):
-        visitor.by_list(self)
+    def visit(self, visitor: NodeVisitor[T]) -> T:
+        return visitor.by_list(self)
 
     def location(self) -> Location:
         return self._location
@@ -90,8 +94,8 @@ class IntNode(ExpressionNode):
         self.value = value
         self._location = location
 
-    def visit(self, visitor: Visitor):
-        visitor.by_int(self)
+    def visit(self, visitor: NodeVisitor[T]) -> T:
+        return visitor.by_int(self)
 
     def location(self) -> Location:
         return self._location
@@ -106,8 +110,8 @@ class BoolNode(ExpressionNode):
         self.value = value
         self._location = location
 
-    def visit(self, visitor: Visitor):
-        visitor.by_bool(self)
+    def visit(self, visitor: NodeVisitor[T]) -> T:
+        return visitor.by_bool(self)
 
     def location(self) -> Location:
         return self._location
@@ -117,24 +121,23 @@ class BoolNode(ExpressionNode):
         return space + f"BoolNode({self.value})"
 
 
-# Visitor abstract methods for all nodes
-class NodeVisitor(ABC):
+class NodeVisitor(ABC, Generic[VT]):
     @abstractmethod
-    def by_prog(self, node: ProgramNode):
+    def by_prog(self, node: ProgramNode) -> VT:
         pass
 
     @abstractmethod
-    def by_ident(self, node: IdentifierNode):
+    def by_identifier(self, node: IdentifierNode) -> VT:
         pass
 
     @abstractmethod
-    def by_list(self, node: ListNode):
+    def by_list(self, node: ListNode) -> VT:
         pass
 
     @abstractmethod
-    def by_int(self, node: IntNode):
+    def by_int(self, node: IntNode) -> VT:
         pass
 
     @abstractmethod
-    def by_bool(self, node: BoolNode):
+    def by_bool(self, node: BoolNode) -> VT:
         pass

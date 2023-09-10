@@ -56,7 +56,8 @@ class Parser:
             return node
 
         elif isinstance(self.current_token, TInteger):
-            node = IntNode(self.current_token.literal(), self.current_token.location)
+            inttoken: TInteger = self.current_token
+            node = IntNode(inttoken.number, inttoken.location)
             self.advance()
             return node
 
