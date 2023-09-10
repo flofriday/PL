@@ -38,7 +38,7 @@ class Parser:
     def __init__(self, tokens: list[Token]):
         self.errors: list[BuntError] = []
         self.tokens: list[Token] = tokens
-        self.current_token: Token
+        self.token: Token  # The current token
         self.index = -1
         self.advance()
 
@@ -47,15 +47,15 @@ class Parser:
 
     def parse(self) -> ProgramNode:
         ast = self.expression()
-        if not ast.error and self.current_token.type != TEOF:
+        if not ast.error and self.token.type != TEOF:
             raise BuntErrors(self.errors)
         return ast
 
     def advance(self):
         self.index += 1
         if self.index < len(self.tokens):
-            self.current_token = self.tokens[self.index]
-        return self.current_token
+            self.token = self.tokens[self.index]
+        return self.token
 
     def binary_operation(self, func, ops) -> ParseResult:
         res = ParseResult()
@@ -63,8 +63,8 @@ class Parser:
         if res.error:
             return res
 
-        while self.current_token in ops:
-            op_token = self.current_token
+        while self.token in ops:
+            op_token = self.token
             res.register(self.advance())
             right = res.register(func())
             if res.error:
@@ -75,33 +75,37 @@ class Parser:
 
     def factor(self) -> ParseResult:
         res = ParseResult()
-        tok = self.current_token
 
-        if tok.type in TIdentifier:
+        if self.token.type in TIdentifier:
             res.register(self.advance())
             factor = res.register(self.factor())
             if res.error:
                 return res
-            return res.success(IdentifierNode(tok, factor))
+            return res.success(IdentifierNode(self.token, factor))
 
-        elif tok.type in TInteger:
+        elif self.token.type in TInteger:
             res.register(self.advance())
-            return res.success(IntNode(tok))
+            return res.success(IntNode(self.token))
 
-        elif tok.type == TLeftParan:
+        elif self.token.type == TLeftParan:
+            left_paren_token = self.token
             res.register(self.advance())
             expr = res.register(self.expr())
             if res.error:
                 return res
-            if self.current_token.type == TRightParan:
+            if self.token.type == TRightParan:
                 res.register(self.advance())
                 return res.success(expr)
             else:
-                # TODO set location
-                raise BuntError("Invalid Syntax", Location(-1, -1, -1, -1), "Expected ')'")
+                raise BuntError(
+                    "Invalid Syntax",
+                    Location.merge(
+                        left_paren_token.location(), self.token.location()
+                    ),
+                    "Expected ')'",
+                )
 
-        # TODO set location and fix message
-        raise BuntError("Invalid Syntax", Location(-1, -1, -1, -1), "TODO")
+        raise BuntError("Invalid Syntax", self.token.location(), "TODO")
 
     def expression(self):
         return self.binary_operation(self.factor, (TT_PLUS, TT_MINUS))
@@ -109,7 +113,6 @@ class Parser:
 
 if __name__ == "__main__":
     source_code = "(+ 2 (* 3 4))"
-    tokens = lex(source_code)
-    parser = Parser(tokens)
+    parser = Parser()
     ast = parser.parse()
     print(ast.node, ast.error)
