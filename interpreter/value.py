@@ -9,6 +9,10 @@ class BuntValue(ABC):
     def string(self) -> str:
         pass
 
+    @abstractmethod
+    def type(self) -> str:
+        pass
+
 
 @dataclass
 class IntValue(BuntValue):
@@ -18,6 +22,9 @@ class IntValue(BuntValue):
     def string(self) -> str:
         return str(self.value)
 
+    def type(self) -> str:
+        return "integer"
+
 
 @dataclass
 class BoolValue(BuntValue):
@@ -26,6 +33,9 @@ class BoolValue(BuntValue):
     def string(self) -> str:
         return "true" if self.value else "false"
 
+    def type(self) -> str:
+        return "boolean"
+
 
 @dataclass
 class ListValue(BuntValue):
@@ -33,6 +43,9 @@ class ListValue(BuntValue):
 
     def string(self) -> str:
         return "(" + " ".join(map(lambda i: i.string(), self.value)) + ")"
+
+    def type(self) -> str:
+        return "list"
 
 
 @dataclass
@@ -45,6 +58,9 @@ class FuncValue(BuntValue):
     def string(self) -> str:
         return f"<Function> Arity: {self.arity}, Expression: ({self.expr})"
 
+    def type(self) -> str:
+        return "function"
+
 
 @dataclass
 class BuiltinFuncValue(BuntValue):
@@ -56,3 +72,6 @@ class BuiltinFuncValue(BuntValue):
 
     def string(self) -> str:
         return f"<Builtin Function> Arity: {self.arity}"
+
+    def type(self) -> str:
+        return "function"

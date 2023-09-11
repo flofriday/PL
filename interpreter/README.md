@@ -2,7 +2,10 @@
 
 ## The Bunt Interpreter
 
-**Usage:**
+### Usage
+
+You need python 3.11 or later.
+
 ```bash
 usage: python3 bunt.py [-h] [--dump-token] [--dump-ast] [filename]
 

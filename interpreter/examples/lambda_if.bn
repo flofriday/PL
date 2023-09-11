@@ -4,32 +4,35 @@
             (lst counter)
             (if (<= counter 10)
                 # if counter smaller than goal, append counter to list
-                (built (+ lst (list counter)) )
+                (built
+                    (+ lst (list counter)) # append counter to list
+                    (+ counter 1) # increase counter by one
+                )
                 # else return lst
                 lst
             )
         )
     )
-    (built (list) 2)
+    (print (built (list) 2))
 )
 
 # works correct
-(let
-    (
-        (built
-            (lambda
-                (lst counter)
-                (print counter)
-            )
-        )
-        (y 2)
-    )
-    (if (<= y 2)
-        (print y)
-        (print 0)
-    )
-    (built (list) 2)
-)
+# (let
+#     (
+#         (built
+#             (lambda
+#                 (lst counter)
+#                 (print counter)
+#             )
+#         )
+#         (y 2)
+#     )
+#     (if (<= y 2)
+#         (print y)
+#         (print 0)
+#     )
+#     (built (list) 2)
+# )
 
 
 
@@ -40,18 +43,16 @@
 #     (
 #         (lambda
 #             (y)
-#             (
-#                 (lambda
-#                     (x)
-#                     (print x)
-#                     # (if (<= y 1)
-#                     #     (print y)
-#                     #     (print x)
-#                     # )
-#                 )
+#
+#             (lambda
+#                 (x)
+#                 (print x)
 #             )
+#
 #         )
 #         2
 #     )
 #     1
 # )
+
+# ( ( (lambda (y) ( (lambda (x) (print x)) ) ) 2 ) 1)

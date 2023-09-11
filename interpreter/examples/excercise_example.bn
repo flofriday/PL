@@ -1,9 +1,81 @@
+# This file showcases the code examples from exercise 2
+# {
+#     list = c -> f -> x ->
+#         cond (c x)
+#              { val = x, nxt = list c f (f x) }
+#              {}
+#     ,
+#     reduce = f -> x -> lst ->
+#         cond lst
+#              (f (reduce f x (lst nxt)) (lst val))
+#              x
+#     ,
+#     range = a -> b ->
+#         list (x -> minus b x) (x -> plus 1 x) a
+#     ,
+#     sum = lst ->
+#         reduce (x -> y -> plus x y) 0 lst
+# }
+# sum (range 3 6)
+
 (let
     (
+        # list implementation like the one given by the example
+        (clist
+            (lambda
+                (c f x)
+                (if
+                    (c x)
+                    (list x (clist c f (f x)))
+                    (list)
+                )
+            )
+        )
+
+        # range implementation like the one given in the example
+        (crange
+            (lambda
+                (a b)
+                (clist
+                    (lambda (x) (not (= x b)))
+                    (lambda (x) (+ 1 x))
+                    a
+                )
+            )
+        )
+
         # reduce function definition
+        (reduce
+            (lambda
+                (f x lst)
+                (if
+                    (= (len lst) 0)
+                    x
+                    (let
+                        (first (head lst))
+                        (f (reduce f x (drop lst 0)) first)
+                    )
+                )
+            )
+        )
 
         # range function definition
         (range
+            (lambda
+                (a b)
+                (if
+                    (= a b)
+                    (list a)
+                    (+
+                        (range a (- b 1))
+                        (list b)
+                    )
+                )
+            )
+        )
+
+        # quite complex range function definition
+        (complex_range
             (lambda
                 (a b)
                 # define recursive inner lambda
@@ -13,7 +85,10 @@
                             (lst counter)
                             (if (<= counter b)
                                 # if counter smaller than goal, append counter to list
-                                (built (+ lst (list counter)) )
+                                (built
+                                    (+ lst (list counter)) # append counter to list
+                                    (+ counter 1) # increase counter by one
+                                )
                                 # else return lst
                                 lst
                             )
@@ -38,27 +113,10 @@
             )
         )
     )
-    (range 3 6)
+
+    (print (crange 3 6))
+    (print (range 3 6))
+    (print (complex_range 3 6))
+    # (print (sum (list 1 2)))
 )
 
-
-
-
-# {
-#     list = c -> f -> x ->
-#         cond (c x)
-#              { val = x, nxt = list c f (f x) }
-#              {}
-#     ,
-#     reduce = f -> x -> lst ->
-#         cond lst
-#              (f (reduce f x (lst nxt)) (lst val))
-#              x
-#     ,
-#     range = a -> b ->
-#         list (x -> minus b x) (x -> plus 1 x) a
-#     ,
-#     sum = lst ->
-#         reduce (x -> y -> plus x y) 0 lst
-# }
-# sum (range 3 6)

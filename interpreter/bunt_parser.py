@@ -17,32 +17,23 @@ class Parser:
         self.tokens: list[Token] = tokens
         self.current_token: Token  # The current token
         self.index = -1
-        self.advance()
-
-    def at_end(self) -> bool:
-        return isinstance(self.tokens[self.index], TEOF) or self.index >= len(
-            self.tokens
-        )
-
-    def advance(self):
-        self.index += 1
-        if self.index < len(self.tokens):
-            self.current_token = self.tokens[self.index]
-        return self.current_token
+        self._advance()
 
     def parse(self) -> ProgramNode:
-        program_node = self.parse_program()
+        program_node = self._parse_program()
 
         if self.errors != []:
             raise BuntErrors(self.errors)
 
         return program_node
 
-    def parse_program(self) -> ProgramNode:
+
+
+    def _parse_program(self) -> ProgramNode:
         expressions = []
         # import pdb;
         # breakpoint()
-        while not self.at_end():
+        while not self._at_end():
             expressions.append(self.parse_expression())
 
         return ProgramNode(expressions)
@@ -52,23 +43,23 @@ class Parser:
             node = IdentifierNode(
                 self.current_token.literal(), self.current_token.location
             )
-            self.advance()
+            self._advance()
             return node
 
         elif isinstance(self.current_token, TInteger):
             inttoken: TInteger = self.current_token
             node = IntNode(inttoken.number, inttoken.location)
-            self.advance()
+            self._advance()
             return node
 
         elif isinstance(self.current_token, TTrue):
             node = BoolNode(True, self.current_token.location)
-            self.advance()
+            self._advance()
             return node
 
         elif isinstance(self.current_token, TFalse):
             node = BoolNode(False, self.current_token.location)
-            self.advance()
+            self._advance()
             return node
 
         elif isinstance(self.current_token, TLeftParan):
@@ -81,18 +72,18 @@ class Parser:
                 "This closing parenthesis doesn't have a matching opening one.",
             )
         )
-        self.advance()
+        self._advance()
 
     def parse_list(self) -> ListNode:
         left_paren = self.current_token
-        self.advance()
+        self._advance()
 
         expressions = []
-        while not isinstance(self.current_token, TRightParan) and not self.at_end():
+        while not isinstance(self.current_token, TRightParan) and not self._at_end():
             expressions.append(self.parse_expression())
 
         # Error case
-        if self.at_end():
+        if self._at_end():
             self.errors.append(
                 BuntError(
                     "Invalid Syntax",
@@ -105,7 +96,20 @@ class Parser:
             raise BuntErrors(self.errors)
 
         right_paren = self.current_token
-        self.advance()
+        self._advance()
         return ListNode(
             expressions, Location.merge(left_paren.location, right_paren.location)
+        )
+
+
+    def _advance(self):
+        self.index += 1
+        if self.index < len(self.tokens):
+            self.current_token = self.tokens[self.index]
+        return self.current_token
+
+
+    def _at_end(self) -> bool:
+        return isinstance(self.tokens[self.index], TEOF) or self.index >= len(
+            self.tokens
         )

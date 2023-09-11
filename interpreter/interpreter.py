@@ -39,15 +39,15 @@ class Interpreter(NodeVisitor[BuntValue]):
         return self.env[node.name]
 
     def by_list(self, node: ListNode) -> BuntValue:
-        # FIXME: What should we do?
         if not node.expressions:
-            raise NotImplementedError()
+            raise BuntError(
+                "Missing function",
+                node.location(),
+                "You need to specify a function that you call"
+            )
 
         func = node.expressions[0].visit(self)
 
-        # FIXME: Check arity (consider the builtin list function is vararg)
-
-        # FIXME: When entering a new parenthesis a new environment is created
 
         if isinstance(func, BuiltinFuncValue):
             func: BuiltinFuncValue = func
@@ -70,13 +70,12 @@ class Interpreter(NodeVisitor[BuntValue]):
                     error.location = node.location()
                 raise error
 
-        # FIXME: Implement FuncValue (might be hard)
         if isinstance(func, FuncValue):
             func: FuncValue = func
             args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
             params = func.args
             if len(args) != len(params):
-                BuntError(
+                raise BuntError(
                     header="Invalid number of arguments",
                     message=f"The function resulting of {node.expressions[0]} expects {func.arity} arguments, but you "
                             f"provided {len(args)}",
@@ -96,13 +95,9 @@ class Interpreter(NodeVisitor[BuntValue]):
             self.env = current_env
             return result
 
-
-
-        # FIXME: Propper error that one tried to call something that isn't a
-        # function.
         raise BuntError(
-            header="Non function call",
-            message="You tried to call some value that was no function",
+            header="Not a function",
+            message=f"You tried to call a value of type {func.type()} which is not a function.",
             location=node.location()
         )
 

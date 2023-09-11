@@ -14,6 +14,7 @@ def add_builtin_functions(env):
     env["lambda"] = BuiltinFuncValue(2, lambda_builtin)
     env["print"] = BuiltinFuncValue(1, println_builtin)
     env["list"] = BuiltinFuncValue(-1, list_builtin)
+    env["len"] = BuiltinFuncValue(1, len_builtin)
     env["head"] = BuiltinFuncValue(1, head_builtin)
     env["init"] = BuiltinFuncValue(1, init_builtin)
     env["last"] = BuiltinFuncValue(1, last_builtin)
@@ -33,16 +34,6 @@ def add_builtin_functions(env):
     env["and"] = BuiltinFuncValue(2, and_builtin)
     env["not"] = BuiltinFuncValue(1, not_builtin)
     env["if"] = BuiltinFuncValue(3, if_builtin)
-
-
-
-
-
-# FIXME: So there is the problem that a built-in function might want to throw an
-# error but it cannot really do it as it has no reference to the node that is
-# currently processed for the location highlighting
-# One solution might be to throw the BuntError here with an invalid location and
-# later fix it in the interpreter where we know the node.
 
 
 def let_builtin(args, interpreter):
@@ -344,7 +335,18 @@ def drop_builtin(ast_args: list[AstNode], interpreter):
             raise BuntError
     else:
         raise BuntError
-    return b.value[a.value:-1]
+    return ListValue(b.value[a.value:-1])
+
+def len_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if not isinstance(args[0], ListValue):
+        raise BuntError(
+            header="Invalid value type",
+            message=f"Function 'len' requires an argument of type list, but got {args[0].type()}",
+        )
+
+    ls: ListValue = args[0]
+    return IntValue(len(ls.value))
 
 
 def head_builtin(ast_args: list[AstNode], interpreter):

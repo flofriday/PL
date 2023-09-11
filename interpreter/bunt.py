@@ -22,7 +22,7 @@ def main():
     # parser.add_argument("--recursion-limit", )
     args = parser.parse_args()
 
-    sys.setrecursionlimit(100000)
+    sys.setrecursionlimit(100_000)
     if args.filename is None:
         interpret_repl(args)
     else:
@@ -46,10 +46,9 @@ def interpret_repl(args):
                     1 for t in tokens if isinstance(t, TRightParan)
             ):
                 tokens = tokens[:-1]
-                source_line = "\n" + input("... ")
-                source += source_line
-                scanner = Scanner(source_line)
-                tokens += scanner.scan()
+                source += "\n" + input("... ")
+                scanner = Scanner(source)
+                tokens = scanner.scan()
 
             if args.dump_token:
                 for token in tokens:
