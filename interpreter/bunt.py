@@ -37,10 +37,10 @@ def interpret_repl(args):
             scanner = Scanner(source)
             tokens = scanner.scan()
 
-            # Keep reeding if there are more left parenthesis tokens than right
+            # Keep reading if there are more left parenthesis tokens than right
             # ones.
             while sum(1 for t in tokens if isinstance(t, TLeftParan)) > sum(
-                1 for t in tokens if isinstance(t, TRightParan)
+                    1 for t in tokens if isinstance(t, TRightParan)
             ):
                 tokens = tokens[:-1]
                 source_line = "\n" + input("... ")
@@ -117,4 +117,5 @@ def interpret_file(filename: str, args):
         exit(1)
 
 
-main()
+if __name__ == "__main__":
+    main()

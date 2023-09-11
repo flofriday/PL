@@ -4,7 +4,7 @@ from bunt_ast import (
     IntNode,
     BoolNode,
     ListNode,
-    IdentifierNode,
+    IdentifierNode, AstNode,
 )
 from value import BuiltinFuncValue, BuntValue, BoolValue, IntValue, ListValue
 from bunt_error import BuntError
@@ -42,7 +42,6 @@ class Interpreter(NodeVisitor[BuntValue]):
             raise NotImplementedError()
 
         func = node.expressions[0].visit(self)
-        args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
 
         # FIXME: Check arity (consider the builtin list function is vararg)
 
@@ -50,6 +49,7 @@ class Interpreter(NodeVisitor[BuntValue]):
 
         if isinstance(func, BuiltinFuncValue):
             func: BuiltinFuncValue = func
+            args: list[AstNode] = node.expressions[1:]
             if func.arity < len(args):
                 raise BuntError(
                     "Too many arguments",
@@ -58,6 +58,7 @@ class Interpreter(NodeVisitor[BuntValue]):
                 )
             return func.func(args, self)
 
+        args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
         # FIXME: Implement FuncValue (might be hard)
 
         # FIXME: Propper error that one tried to call something that isn't a

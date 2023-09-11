@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from bunt_ast import ExpressionNode
+from bunt_ast import ExpressionNode, AstNode, IdentifierNode
 from typing import Callable, Any
 
 
@@ -38,6 +38,7 @@ class ListValue(BuntValue):
 @dataclass
 class FuncValue(BuntValue):
     arity: int
+    args: [IdentifierNode]
     expr: ExpressionNode
 
     def string(self) -> str:
@@ -50,7 +51,7 @@ class BuiltinFuncValue(BuntValue):
     # The arguements are the real arguments to the function and the interpreter
     # We cannot type it here because of circular dependencies
     # FIXME: Fix later
-    func: Callable[[list[BuntValue], Any], BuntValue]
+    func: Callable[[list[AstNode], Any], BuntValue]
 
     def string(self) -> str:
         return f"<Builtin Function> Arity: {self.arity}"
