@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bunt_ast import (
     ProgramNode,
     NodeVisitor,
@@ -6,7 +8,7 @@ from bunt_ast import (
     ListNode,
     IdentifierNode, AstNode,
 )
-from value import BuiltinFuncValue, BuntValue, BoolValue, IntValue, ListValue
+from value import BuiltinFuncValue, BuntValue, BoolValue, IntValue, ListValue, FuncValue
 from bunt_error import BuntError
 
 from environment import Environment
@@ -16,7 +18,7 @@ class Interpreter(NodeVisitor[BuntValue]):
     def __init__(self, env: Environment):
         self.env: Environment = env
 
-    def exec(self, ast: ProgramNode) -> BuntValue:
+    def exec(self, ast: AstNode) -> BuntValue:
         return ast.visit(self)
 
     def by_prog(self, node: ProgramNode) -> BuntValue:
@@ -38,7 +40,7 @@ class Interpreter(NodeVisitor[BuntValue]):
 
     def by_list(self, node: ListNode) -> BuntValue:
         # FIXME: What should we do?
-        if node.expressions == []:
+        if not node.expressions:
             raise NotImplementedError()
 
         func = node.expressions[0].visit(self)
@@ -50,16 +52,42 @@ class Interpreter(NodeVisitor[BuntValue]):
         if isinstance(func, BuiltinFuncValue):
             func: BuiltinFuncValue = func
             args: list[AstNode] = node.expressions[1:]
-            if func.arity < len(args):
+
+            # ignores arity check if the BuiltinFunctions arity is set to -1
+            # otherwise verifies if correct number args were given
+            if func.arity != -1 and func.arity is not len(args):
                 raise BuntError(
-                    "Too many arguments",
+                    "Wrong number of arguments",
                     node.location(),
                     f"Arity is {func.arity} but {len(args)} arguments were given",
                 )
             return func.func(args, self)
 
-        args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
         # FIXME: Implement FuncValue (might be hard)
+        if isinstance(func, FuncValue):
+            func: FuncValue = func
+            args: list[BuntValue] = [e.visit(self) for e in node.expressions[1:]]
+            params = func.args
+            if len(args) != len(params):
+                BuntError(
+                    header="Invalid number of arguments",
+                    message=f"The function resulting of {node.expressions[0]} expects {func.arity} arguments, but you "
+                            f"provided {len(args)}",
+                    location=node.location(),
+                )
+
+            # push new scoped environment
+            self.push_env(Environment())
+            # add params to environment
+            for i, a in zip(params, args):
+                self.env[i.name] = a
+            # execute function
+            result = self.exec(func.expr)
+            # pop scoped function environment
+            self.pop_env()
+            return result
+
+
 
         # FIXME: Propper error that one tried to call something that isn't a
         # function.
@@ -70,3 +98,17 @@ class Interpreter(NodeVisitor[BuntValue]):
 
     def by_bool(self, node: BoolNode) -> BuntValue:
         return BoolValue(node.value)
+
+    def push_env(self, env: Environment):
+        """Pushes the given environment to the environment stack"""
+        env.previous = self.env
+        self.env = env
+
+    def pop_env(self) -> Optional[Environment]:
+        """Pops the current environment from the stack and returns it. Only if the previous is not None."""
+        if self.env.previous is None:
+            return None
+
+        env = self.env
+        self.env = env.previous
+        return env

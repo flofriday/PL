@@ -20,6 +20,14 @@ class TestScanner(unittest.TestCase):
         )  # Adjust with correct class name for right parenthesis
         self.assertEqual(tokens[5].__class__.__name__, "TEOF")
 
+    def test_simple_arithmetic_operations(self):
+        scanner = Scanner("true false")
+        tokens = scanner.scan()
+        self.assertEqual(len(tokens), 3)
+        self.assertEqual(tokens[0].__class__.__name__, "TTrue")
+        self.assertEqual(tokens[1].__class__.__name__, "TFalse")
+        self.assertEqual(tokens[2].__class__.__name__, "TEOF")
+
     def test_list_operations(self):
         scanner = Scanner("(print (list 1 2 3))")
         tokens = scanner.scan()

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from bunt_error import BuntError
-from bunt_token import TEOF, TIdentifier, TInteger, TLeftParan, Token, TRightParan
+from bunt_token import TEOF, TIdentifier, TInteger, TLeftParan, Token, TRightParan, TTrue, TFalse
 from location import Location
 from typing import List, Optional, Callable
 
@@ -56,10 +56,19 @@ class Scanner:
                         location=self._span_location(curr_location),
                     )
                 elif _is_valid_identifier_start(self.curr_char):
-                    token = TIdentifier(
-                        name=self._read_identifier(),
-                        location=self._span_location(curr_location),
-                    )
+                    name = self._read_identifier()
+                    location = self._span_location(curr_location)
+
+                    match name:
+                        case "true":
+                            token = TTrue(location=location)
+                        case "false":
+                            token = TFalse(location=location)
+                        case _:
+                            token = TIdentifier(
+                                name=name,
+                                location=location,
+                            )
                 else:
                     raise BuntError(
                         header="Invalid Symbol",
@@ -148,13 +157,14 @@ class Scanner:
                 self.curr_loc.line += 1
                 self.curr_loc.col = -1
 
-        self.curr_loc.col += 1
-        self.pos = self.readpos
-        self.readpos += 1
+        if self.curr_char is not None:
+            self.curr_loc.col += 1
+            self.pos = self.readpos
+            self.readpos += 1
 
 
 def _is_valid_identifier_start(ch: chr) -> bool:
-    return ("a" <= ch <= "z") or ("A" <= ch <= "Z") or ch in "+-!$&*^_~:/%"
+    return ("a" <= ch <= "z") or ("A" <= ch <= "Z") or ch in "+-!$&*^_~:/%<>="
 
 
 def _is_valid_identifier_part(ch: chr) -> bool:

@@ -33,6 +33,13 @@ class TRightParan(Token):
     def literal(self) -> str:
         return ")"
 
+class TTrue(Token):
+    def literal(self) -> str:
+        return "true"
+
+class TFalse(Token):
+    def literal(self) -> str:
+        return "false"
 
 class TIdentifier(Token):
     name: str

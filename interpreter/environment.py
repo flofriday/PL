@@ -4,7 +4,8 @@ from value import BuntValue
 
 
 class Environment(dict):
-    def __init__(self, previous: Self):
+    def __init__(self, previous: Optional[Self] = None):
+        super().__init__()
         self.previous: Optional[Self] = previous
         self.variables: dict[str, BuntValue] = {}
 

@@ -4,9 +4,9 @@ from bunt_token import (
     TIdentifier,
     TInteger,
     TLeftParan,
-    TRightParan,
+    TRightParan, TTrue, TFalse,
 )
-from bunt_ast import ExpressionNode, IdentifierNode, IntNode, ProgramNode, ListNode
+from bunt_ast import ExpressionNode, IdentifierNode, IntNode, ProgramNode, ListNode, BoolNode
 from bunt_error import BuntErrors, BuntError
 from location import Location
 
@@ -58,6 +58,16 @@ class Parser:
         elif isinstance(self.current_token, TInteger):
             inttoken: TInteger = self.current_token
             node = IntNode(inttoken.number, inttoken.location)
+            self.advance()
+            return node
+
+        elif isinstance(self.current_token, TTrue):
+            node = BoolNode(True, self.current_token.location)
+            self.advance()
+            return node
+
+        elif isinstance(self.current_token, TFalse):
+            node = BoolNode(False, self.current_token.location)
             self.advance()
             return node
 
