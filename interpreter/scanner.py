@@ -14,16 +14,13 @@ class ScanPos:
 
 
 class Scanner:
-    input: str
-    pos = 0
-    readpos = 0
-    curr_char: Optional[chr] = None
-    curr_loc: ScanPos = ScanPos(1, 0)
-
     def __init__(self, input: str) -> None:
         self.input = input
+        self.pos = 0
+        self.readpos = 0
+        self.curr_char: Optional[chr] = None
+        self.curr_loc =  ScanPos(1, 0)
         self._read_char()
-        pass
 
     def scan(self) -> List[Token]:
         tokens: List[Token] = []
