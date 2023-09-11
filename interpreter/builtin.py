@@ -10,14 +10,21 @@ from value import BuntValue, IntValue, BuiltinFuncValue, ListValue, FuncValue, B
 def add_builtin_functions(env):
     env["cool"] = BuiltinFuncValue(0, cool_builtin)
     env["let"] = BuiltinFuncValue(-1, let_builtin)
+    env["defun"] = BuiltinFuncValue(3, defun_builtin)
     env["lambda"] = BuiltinFuncValue(2, lambda_builtin)
     env["print"] = BuiltinFuncValue(1, println_builtin)
     env["list"] = BuiltinFuncValue(-1, list_builtin)
+    env["head"] = BuiltinFuncValue(1, head_builtin)
+    env["init"] = BuiltinFuncValue(1, init_builtin)
+    env["last"] = BuiltinFuncValue(1, last_builtin)
+    env["take"] = BuiltinFuncValue(2, take_builtin)
+    env["drop"] = BuiltinFuncValue(2, drop_builtin)
     env["+"] = BuiltinFuncValue(2, plus_builtin)
     env["-"] = BuiltinFuncValue(2, minus_builtin)
     env["*"] = BuiltinFuncValue(2, times_builtin)
     env["/"] = BuiltinFuncValue(2, divide_builtin)
     env["%"] = BuiltinFuncValue(2, modulo_builtin)
+    env["="] = BuiltinFuncValue(2, equality_builtin)
     env[">"] = BuiltinFuncValue(2, greater_than_builtin)
     env[">="] = BuiltinFuncValue(2, greater_equal_than_builtin)
     env["<"] = BuiltinFuncValue(2, less_than_builtin)
@@ -117,7 +124,50 @@ def lambda_builtin(args, interpreter):
         arity=len(func_args),
         args=func_args,
         expr=args[1],
+        enclosing_env=interpreter.env,
     )
+
+def defun_builtin(args, interpreter):
+    if not interpreter.env.is_global():
+        raise BuntError(
+            header="Invalid Scope",
+            message="defun can only be used in the global scope",
+            tip="Use let and lambda to define local functions",
+            location=None
+        )
+
+    if not isinstance(args[0], IdentifierNode):
+        raise BuntError(
+            header="Invalid function name",
+            message="Expected an identifier as function name",
+            location=args[0].location(),
+            tip=None,
+        )
+
+    func_name: IdentifierNode = args[0]
+
+    func_args: list[IdentifierNode] = []
+
+    # determine function arguments
+    ast_func_args: list[AstNode] = args[1].expressions if isinstance(args[1], ListNode) else [args[1]]
+    for a in ast_func_args:
+        if not isinstance(a, IdentifierNode):
+            raise BuntError(
+                header="Wrong Parameter Type",
+                message=f"Expected an identifier",
+                location=a.location()
+            )
+        func_args.append(a)
+
+    # build function value
+    func_value =  FuncValue(
+        arity=len(func_args),
+        args=func_args,
+        expr=args[2],
+        enclosing_env=interpreter.env,
+    )
+    interpreter.env[func_name.name] = func_value
+    return func_value
 
 
 def cool_builtin(_args, _interpreter):
@@ -183,6 +233,13 @@ def modulo_builtin(ast_args: list[AstNode], interpreter):
 #####################################
 #        COMPARISON OPERATOR        #
 #####################################
+
+
+def equality_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    return BoolValue(args[0] == args[1])
+
+
 def greater_than_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
@@ -191,6 +248,7 @@ def greater_than_builtin(ast_args: list[AstNode], interpreter):
         return BoolValue(a.value > b.value)
     else:
         raise NotImplementedError()
+
 
 def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
@@ -245,9 +303,9 @@ def or_builtin(ast_args: list[AstNode], interpreter):
 
 def and_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
-    if isinstance(args[0], BoolValue) and isinstance(args[1], BoolValue):
-        a: BoolValue = args[0]
-        b: BoolValue = args[1]
+    if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
+        a: IntValue = args[0]
+        b: ListValue = args[1]
         return BoolValue(a.value and b.value)
     else:
         raise NotImplementedError()
@@ -265,6 +323,72 @@ def if_builtin(ast_args: list[AstNode], interpreter):
 
 def list_builtin(ast_args: list[AstNode], interpreter):
     return ListValue(_eval_args(ast_args, interpreter))
+
+
+def take_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
+        a: IntValue = args[0]
+        b: ListValue = args[1]
+    else:
+        raise BuntError
+    return b.value[a.value]
+
+
+def drop_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
+        a: IntValue = args[0]
+        b: ListValue = args[1]
+        if a.value > len(b.value):
+            raise BuntError
+    else:
+        raise BuntError
+    return b.value[a.value:-1]
+
+
+def head_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], ListValue):
+        a: ListValue = args[0]
+        if len(a.value) == 0:
+            raise BuntError
+    else:
+        raise BuntError
+    return a.value[0]
+
+
+def last_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], ListValue):
+        a: ListValue = args[0]
+        if len(a.value) == 0:
+            raise BuntError
+    else:
+        raise BuntError
+    return a.value[-0]
+
+
+def tail_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], ListValue):
+        a: ListValue = args[0]
+        if len(a.value) == 0:
+            raise BuntError
+    else:
+        raise BuntError
+    return a.value[1:-1]
+
+
+def init_builtin(ast_args: list[AstNode], interpreter):
+    args: list[BuntValue] = _eval_args(ast_args, interpreter)
+    if isinstance(args[0], ListValue):
+        a: ListValue = args[0]
+        if len(a.value) == 0:
+            raise BuntError
+    else:
+        raise BuntError
+    return a.value[0:-2]
 
 
 def print_builtin(ast_args: list[AstNode], interpreter):

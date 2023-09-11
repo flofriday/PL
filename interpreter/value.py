@@ -40,6 +40,7 @@ class FuncValue(BuntValue):
     arity: int
     args: [IdentifierNode]
     expr: ExpressionNode
+    enclosing_env: Any
 
     def string(self) -> str:
         return f"<Function> Arity: {self.arity}, Expression: ({self.expr})"

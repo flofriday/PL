@@ -61,7 +61,14 @@ class Interpreter(NodeVisitor[BuntValue]):
                     node.location(),
                     f"Arity is {func.arity} but {len(args)} arguments were given",
                 )
-            return func.func(args, self)
+
+            try:
+                return func.func(args, self)
+            except BuntError as error:
+                # Attach the correct location to the error
+                if error.location is None:
+                    error.location = node.location()
+                raise error
 
         # FIXME: Implement FuncValue (might be hard)
         if isinstance(func, FuncValue):
@@ -77,21 +84,27 @@ class Interpreter(NodeVisitor[BuntValue]):
                 )
 
             # push new scoped environment
+            current_env = self.env
+            self.env = func.enclosing_env
             self.push_env(Environment())
             # add params to environment
             for i, a in zip(params, args):
                 self.env[i.name] = a
             # execute function
             result = self.exec(func.expr)
-            # pop scoped function environment
-            self.pop_env()
+            # restore the environment
+            self.env = current_env
             return result
 
 
 
         # FIXME: Propper error that one tried to call something that isn't a
         # function.
-        raise NotImplementedError()
+        raise BuntError(
+            header="Non function call",
+            message="You tried to call some value that was no function",
+            location=node.location()
+        )
 
     def by_int(self, node: IntNode) -> BuntValue:
         return IntValue(node.value)

@@ -1,5 +1,6 @@
 import argparse
 from builtin import add_builtin_functions
+import sys
 
 from scanner import Scanner
 from bunt_parser import Parser
@@ -18,8 +19,10 @@ def main():
     parser.add_argument("filename", nargs="?")  # positional argument
     parser.add_argument("--dump-token", action="store_true")
     parser.add_argument("--dump-ast", action="store_true")
+    # parser.add_argument("--recursion-limit", )
     args = parser.parse_args()
 
+    sys.setrecursionlimit(100000)
     if args.filename is None:
         interpret_repl(args)
     else:

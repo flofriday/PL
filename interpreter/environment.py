@@ -4,10 +4,14 @@ from value import BuntValue
 
 
 class Environment(dict):
+
     def __init__(self, previous: Optional[Self] = None):
         super().__init__()
         self.previous: Optional[Self] = previous
         self.variables: dict[str, BuntValue] = {}
+
+    def is_global(self):
+        return self.previous is None
 
     def __getitem__(self, name: str) -> BuntValue:
         if name in self.variables:
