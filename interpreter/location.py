@@ -4,18 +4,31 @@ from typing import Self
 
 @dataclass
 class Location:
-    """The class to indicate where a token/astnode is in the source code"""
+    """The class to indicate where a token/astnode is in the source code.
+
+    :param startline: The starting line (starting at 1) (inclusive)
+    :param startcol: The starting column (starting at 1) (inclusive)
+    :param endline: The ending line (inclusive)
+    :param endcol: The ending column (inclusive)
+    """
 
     startline: int
     startcol: int
     endline: int
     endcol: int
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Location({self.startline}, {self.startcol}, {self.endline}, {self.endcol})"
 
     @staticmethod
     def merge(begin: Self, end: Self):
+        """
+        Merges two locations and everything inbetween. The order of begin and end doesn't matter.
+
+        :param begin: The first location.
+        :param end: The second location.
+        :return: a merged location of begin and end
+        """
         startline = min(begin.startline, end.startline)
         startcol = begin.startcol
 

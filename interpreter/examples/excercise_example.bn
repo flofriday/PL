@@ -53,7 +53,7 @@
                     x
                     (let
                         (first (head lst))
-                        (f (reduce f x (drop lst 0)) first)
+                        (f (reduce f x (tail lst)) first)
                     )
                 )
             )
@@ -114,9 +114,9 @@
         )
     )
 
-    (print (crange 3 6))
-    (print (range 3 6))
-    (print (complex_range 3 6))
-    # (print (sum (list 1 2)))
+    # (print (crange 3 6))
+    # (print (range 3 6))
+    # (print (complex_range 3 6))
+    (print (sum (range 3 6)))
 )
 

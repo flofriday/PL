@@ -8,15 +8,15 @@ from value import BuntValue, IntValue, BuiltinFuncValue, ListValue, FuncValue, B
 
 
 def add_builtin_functions(env):
-    env["cool"] = BuiltinFuncValue(0, cool_builtin)
     env["let"] = BuiltinFuncValue(-1, let_builtin)
-    env["defun"] = BuiltinFuncValue(3, defun_builtin)
     env["lambda"] = BuiltinFuncValue(2, lambda_builtin)
+    env["defun"] = BuiltinFuncValue(3, defun_builtin)
     env["print"] = BuiltinFuncValue(1, println_builtin)
     env["list"] = BuiltinFuncValue(-1, list_builtin)
     env["len"] = BuiltinFuncValue(1, len_builtin)
     env["head"] = BuiltinFuncValue(1, head_builtin)
     env["init"] = BuiltinFuncValue(1, init_builtin)
+    env["tail"] = BuiltinFuncValue(1, tail_builtin)
     env["last"] = BuiltinFuncValue(1, last_builtin)
     env["take"] = BuiltinFuncValue(2, take_builtin)
     env["drop"] = BuiltinFuncValue(2, drop_builtin)
@@ -37,6 +37,19 @@ def add_builtin_functions(env):
 
 
 def let_builtin(args, interpreter):
+    """
+    `let ((<var> <expr>)... ) <expr> ...`
+
+    The `let` expression allows to bind values to variables that can be used in
+    its inner expressions.
+
+    Throws `BuntError` if let structure is invalid or variable was already bound.
+
+    :param args: the variable bindings (arg[0]) and subsequent expressions (arg[1:])
+    :param interpreter: the currently executing interpreter
+    :return: the value evaluated from the last let expression
+    """
+
     if len(args) < 2:
         raise "Invalid number of arguments"
 
@@ -47,7 +60,6 @@ def let_builtin(args, interpreter):
             location=args[0].location(),
             tip="To bind variables write `(let ((a 2) (b 3)) (a + b))`"
         )
-
 
     # push new scoped environment
     interpreter.push_env(Environment())
@@ -97,6 +109,18 @@ def let_builtin(args, interpreter):
 
 
 def lambda_builtin(args, interpreter):
+    """
+    `lambda ([<param>] ...) <expr>`
+
+    The `lambda` expression allows to define lambda functions with zero or more parameters.
+
+    Throws `BuntError` if params are not identifiers.
+
+    :param args: the param list (arg[0]) and lambda expression definition (arg[1])
+    :param interpreter: the currently executing interpreter
+    :return: the lambda function as bunt value
+    """
+
     func_args: list[IdentifierNode] = []
 
     # determine function arguments
@@ -117,6 +141,7 @@ def lambda_builtin(args, interpreter):
         expr=args[1],
         enclosing_env=interpreter.env,
     )
+
 
 def defun_builtin(args, interpreter):
     if not interpreter.env.is_global():
@@ -151,7 +176,7 @@ def defun_builtin(args, interpreter):
         func_args.append(a)
 
     # build function value
-    func_value =  FuncValue(
+    func_value = FuncValue(
         arity=len(func_args),
         args=func_args,
         expr=args[2],
@@ -160,10 +185,6 @@ def defun_builtin(args, interpreter):
     interpreter.env[func_name.name] = func_value
     return func_value
 
-
-def cool_builtin(_args, _interpreter):
-    print("COOOOOL :P")
-    return ListValue([])
 
 #####################################
 #        ARITHMETIC OPERATOR        #
@@ -179,8 +200,9 @@ def plus_builtin(ast_args: list[AstNode], interpreter):
         b: ListValue = args[1]
         return ListValue(a.value + b.value)
     else:
-        raise NotImplementedError()
-
+        _invalid_operand_error(msg="Expected both operands to be either integer or list",
+                               tip="Usage (+ 1 1)` or `(+ (list 1) (list 1)",
+                               location=args[0].location())
 
 def minus_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
@@ -189,7 +211,9 @@ def minus_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return IntValue(a.value - b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(- 1 1)`",
+                               location=args[0].location())
 
 
 def times_builtin(ast_args: list[AstNode], interpreter):
@@ -199,7 +223,9 @@ def times_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return IntValue(a.value * b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(- 1 1)`",
+                               location=args[0].location())
 
 
 def divide_builtin(ast_args: list[AstNode], interpreter):
@@ -209,7 +235,9 @@ def divide_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return IntValue(a.value // b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(/ 1 1)`",
+                               location=args[0].location())
 
 
 def modulo_builtin(ast_args: list[AstNode], interpreter):
@@ -219,7 +247,10 @@ def modulo_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return IntValue(a.value % b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(% 1 1)`",
+                               location=args[0].location())
+
 
 #####################################
 #        COMPARISON OPERATOR        #
@@ -238,7 +269,9 @@ def greater_than_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return BoolValue(a.value > b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(> 2 1)`",
+                               location=args[0].location())
 
 
 def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
@@ -248,7 +281,10 @@ def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return BoolValue(a.value >= b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(>- 2 1)`",
+                               location=args[0].location())
+
 
 def less_than_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
@@ -257,7 +293,12 @@ def less_than_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return BoolValue(a.value < b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(< 1 2)`",
+                               location=args[0].location())
+
+
+
 
 def less_equal_than_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
@@ -266,7 +307,10 @@ def less_equal_than_builtin(ast_args: list[AstNode], interpreter):
         b: IntValue = args[1]
         return BoolValue(a.value <= b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be integer",
+                               tip="Usage `(< 1 2)`",
+                               location=args[0].location())
+
 
 #####################################
 #         LOGIC OPERATOR            #
@@ -279,7 +323,9 @@ def not_builtin(ast_args: list[AstNode], interpreter):
         a: BoolValue = args[0]
         return BoolValue(not a.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected operand to be a boolean value",
+                               tip="Usage `(not true)`",
+                               location=args[0].location())
 
 
 def or_builtin(ast_args: list[AstNode], interpreter):
@@ -289,23 +335,29 @@ def or_builtin(ast_args: list[AstNode], interpreter):
         b: BoolValue = args[1]
         return BoolValue(a.value or b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be boolean",
+                               tip="Usage `(or true false)`",
+                               location=args[0].location())
 
 
 def and_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
-    if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
-        a: IntValue = args[0]
-        b: ListValue = args[1]
+    if isinstance(args[0], BoolValue) and isinstance(args[1], BoolValue):
+        a: BoolValue = args[0]
+        b: BoolValue = args[1]
         return BoolValue(a.value and b.value)
     else:
-        raise NotImplementedError()
+        _invalid_operand_error(msg="Expected both operands to be boolean",
+                               tip="Usage `(and true false)`",
+                               location=args[0].location())
 
 
 def if_builtin(ast_args: list[AstNode], interpreter):
     condition = ast_args[0].visit(interpreter)
     if not isinstance(condition, BoolValue):
-        raise BuntError
+        _invalid_operand_error(msg="Expected test condition to be boolean",
+                               tip="Usage `(if true 1 2)`",
+                               location=condition.location())
     if condition.value:
         return ast_args[1].visit(interpreter)
     else:
@@ -321,8 +373,16 @@ def take_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
+    if a.value >= len(b.value) or a.value < 0:
+        raise BuntError(
+            header="Invalid Index",
+            message=f"index {a.value} is not present in the list",
+            tip="Use the len function to check the length of the list"
+        )
     else:
-        raise BuntError
+        _invalid_operand_error(msg="Expected first operand to be an integer and second operand to be a list",
+                               tip="Usage `(take 0 (list 1))`",
+                               location=args[0].location())
     return b.value[a.value]
 
 
@@ -331,19 +391,25 @@ def drop_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
-        if a.value > len(b.value):
-            raise BuntError
+    if a.value < 0:
+        raise BuntError(
+            header="Invalid Index",
+            message=f"index {a.value} should not be below 0",
+            tip="Use a positive number as first arg"
+        )
     else:
-        raise BuntError
-    return ListValue(b.value[a.value:-1])
+        _invalid_operand_error(msg="Expected first operand to be an integer and second operand to be a list",
+                               tip="Usage `(drop 0 (list 1))`",
+                               location=args[0].location())
+    return ListValue(b.value[a.value:])
+
 
 def len_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if not isinstance(args[0], ListValue):
-        raise BuntError(
-            header="Invalid value type",
-            message=f"Function 'len' requires an argument of type list, but got {args[0].type()}",
-        )
+        _invalid_operand_error(msg="Expected argument to be a list",
+                               tip="Usage `(len (list 1))`",
+                               location=args[0].location())
 
     ls: ListValue = args[0]
     return IntValue(len(ls.value))
@@ -354,9 +420,13 @@ def head_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
         if len(a.value) == 0:
-            raise BuntError
+            _invalid_operand_error(msg="Expected a non empty list",
+                                   tip="Usage `(head (list 1))`",
+                                   location=args[0].location())
     else:
-        raise BuntError
+        _invalid_operand_error(msg="Expected argument to be a list",
+                               tip="Usage `(head (list 1))`",
+                               location=args[0].location())
     return a.value[0]
 
 
@@ -365,10 +435,14 @@ def last_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
         if len(a.value) == 0:
-            raise BuntError
+            _invalid_operand_error(msg="Expected a non empty list",
+                                   tip="Usage `(last (list 1))`",
+                                   location=args[0].location())
     else:
-        raise BuntError
-    return a.value[-0]
+        _invalid_operand_error(msg="Expected argument to be a list",
+                               tip="Usage `(last (list 1))`",
+                               location=args[0].location())
+    return a.value[-1]
 
 
 def tail_builtin(ast_args: list[AstNode], interpreter):
@@ -376,10 +450,14 @@ def tail_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
         if len(a.value) == 0:
-            raise BuntError
+            _invalid_operand_error(msg="Expected a non empty list",
+                                   tip="Usage `(tail (list 1))`",
+                                   location=args[0].location())
     else:
-        raise BuntError
-    return a.value[1:-1]
+        _invalid_operand_error(msg="Expected argument to be a list",
+                               tip="Usage `(last (list 1))`",
+                               location=args[0].location())
+    return ListValue(a.value[1:])
 
 
 def init_builtin(ast_args: list[AstNode], interpreter):
@@ -387,24 +465,36 @@ def init_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
         if len(a.value) == 0:
-            raise BuntError
+            _invalid_operand_error(msg="Expected a non empty list",
+                                   tip="Usage `(tail (list 1))`",
+                                   location=args[0].location())
     else:
-        raise BuntError
-    return a.value[0:-2]
+        _invalid_operand_error(msg="Expected argument to be a list",
+                               tip="Usage `(last (list 1))`",
+                               location=args[0].location())
+    return a.value[0:-1]
 
 
 def print_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
-    print(args[0].string())
+    print(args[0])
     return ListValue([])
 
 
 def println_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
-    print(args[0].string(), end='\n')
+    print(args[0], end='\n')
     return ListValue([])
 
 
 def _eval_args(args: list[AstNode], interpreter) -> list[BuntValue]:
     return [e.visit(interpreter) for e in args]
 
+
+def _invalid_operand_error(msg: str, tip: str, location):
+    raise BuntError(
+        header="Invalid operands",
+        message=msg,
+        location=location,
+        tip=tip
+    )
