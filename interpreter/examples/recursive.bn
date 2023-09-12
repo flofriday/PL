@@ -1,0 +1,18 @@
+# Recursivley count down and print 10 when reaching 0
+(let
+    (
+        (cnt
+            (lambda (n)
+                (if (<= n 0)
+                    (print y)
+                    (let (x 333)
+                        (print n)
+                        (cnt (- n 1))
+                    )
+                )
+            )
+        )
+        (y 666)
+    )
+    (cnt 1000)
+)

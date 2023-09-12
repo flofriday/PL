@@ -1,0 +1,4 @@
+(if false
+    (print 13)
+    (print 42)
+)

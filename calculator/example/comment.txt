@@ -1,0 +1,5 @@
+(// This is almost comment)1$
+(// The slashes at the beginning are just for optics)1$
+( Yes so this too would also be comment)1$
+(// But they help with readability)1$
+(// So only the fact that this is a string and gets immediately deleted makes this a comment)1$

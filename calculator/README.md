@@ -1,20 +1,19 @@
-## Calculator
+# Calculator
 
 The calculator for [assignment1](https://tuwel.tuwien.ac.at/pluginfile.php/3542105/mod_folder/content/0/aufgabe1.pdf)
 is written in [Rust](https://www.rust-lang.org/) and has no other dependencies.
 
-### Build and run
+## Build and run
 
 ```bash
-cd calculator
-cargo run < example/single.txt
+cargo run example/single.txt
 ```
 
-### Testing
+## Testing
 
 You can run all the tests with `cargo test`.
 
-### Development
+## Development
 
 We use `cargo fmt` for formatting and `cargo clippy` for linting. 
 clippy can also fix many cases by itself when invoked with `cargo clippy --fix`.

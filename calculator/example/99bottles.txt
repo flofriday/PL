@@ -1,0 +1,40 @@
+(// The counter which will count down )1$
+99 C
+
+(// The loop )1$
+(
+    c" (bottles of beer on the wall,)" c" (bottles of beer.)"
+    ()"
+    (Take one down and pass it around,)" c 1- " (bottles of beer on the wall.)"
+    ()"
+    ()"
+
+    (// Decrese the loop counter and check if we do it again)1$
+    c 1- C
+    e l c 2 > 1+ $ @
+)L
+
+(// Just an empty function )1$
+() E
+
+(// Run the loop, except the last three iterations )1$
+l@
+
+(// Two bottles left )1$
+c" (bottles of beer on the wall,)" c" (bottles of beer.)"
+()"
+(Take one down and pass it around,)" c 1- " (bottle of beer on the wall.)"
+()"
+()"
+c 1- C
+
+(// One bottle left )1$
+c" (bottle of beer on the wall,)" c" (bottles of beer.)"
+()"
+(Take one down and pass it around,)" (no more)" (bottles of beer on the wall.)"
+()"
+()"
+
+(// No bottle left )1$
+(No more bottles of beer on the wall, no more bottles of beer.)"
+(Go to the store and buy some more, 99 bottles of beer on the wall.)"
