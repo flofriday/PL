@@ -13,7 +13,6 @@ import qualified GI.Gtk as Gtk
 import Data.GI.Base
 
 
-
 -- Function to display the open file dialog
 openFileDialog :: IO ()
 openFileDialog = do

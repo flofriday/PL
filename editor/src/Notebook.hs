@@ -6,10 +6,7 @@
 {-# LANGUAGE OverloadedLabels #-}
 
 module Notebook(
-  notebookTabNew,
-  notebookTabStart,
-  notebookTabStop,
-  NotebookTab(..)
+  createAndAddNotebookTab
 ) where
 
 import Control.Monad
@@ -34,17 +31,59 @@ import GI.Gtk
 import qualified GI.Gtk as Gtk (main, init)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
-
+import qualified GI.Gtk as Gtk
 import GI.Gdk (keyvalName, getEventKeyKeyval)
 import Data.GI.Base.Attributes (AttrOp(..), set)
 import Data.GI.Base.BasicTypes (UnexpectedNullPointerReturn(..))
 import Data.GI.Base
+import qualified Highlighting
+import Highlighting(HighlightCond(Keys, Expr))
+
 data NotebookTab =
     NotebookTab {ntBox          :: Box
                 ,ntSpinner      :: Spinner
                 ,ntLabel        :: Label
                 ,ntCloseButton  :: ToolButton
                 ,ntSize         :: Int}
+
+-- Create new tab and link with highlighter
+createAndAddNotebookTab :: Gtk.Notebook -> [(String, String, HighlightCond)] -> [Char] -> IO Bool
+createAndAddNotebookTab notebook rules separators = do
+    -- Create a new text tag table and a buffer for the text view
+    tagTable <- Gtk.new Gtk.TextTagTable []
+    txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+
+    -- Create a TextTag for highlighting 'hello' word
+    _ <- Highlighting.initializeHighlighting rules tagTable
+
+    -- Create text view.
+    textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer]
+    Gtk.widgetShowAll textView -- must show before adding to the notebook
+
+    -- When the buffer content changes, check for instances of 'hello' and apply the tag
+    _ <- Gtk.on txtBuffer #changed $ do
+        Highlighting.applyRules rules separators txtBuffer
+
+    -- Create notebook tab.
+    tab <- notebookTabNew (Just "New tab") Nothing
+    menuLabel <- labelNew (Nothing :: Maybe Text)
+
+    -- Add widgets in notebook.
+    _ <- Gtk.notebookAppendPageMenu notebook textView (Just $ ntBox tab) (Just menuLabel)
+
+    -- Start spinner animation when creating the tab.
+    notebookTabStart tab
+
+    -- -- Stop spinner animation after finishing loading.
+    -- _ <- timeoutAdd Gtk.PRIORITY_DEFAULT 5000 $ notebookTabStop tab >> return False
+
+    -- Close tab when clicking the button.
+    _ <- Gtk.onToolButtonClicked (ntCloseButton tab) $ do
+        index <- Gtk.notebookPageNum notebook textView
+        Gtk.notebookRemovePage notebook index
+
+    return True
+
 
 -- | Create notebook tab.
 notebookTabNew :: Maybe Text -> Maybe Int -> IO NotebookTab

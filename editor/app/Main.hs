@@ -6,27 +6,21 @@
 module Main(main) where
 
 import Data.Maybe
-import Data.Text (Text, pack, unpack)
 import GI.Gtk
        (setWindowTitle, boxPackStart,
         boxNew, mainQuit, onWidgetDestroy, containerAdd,
-        notebookRemovePage, notebookPageNum, onToolButtonClicked,
-        notebookAppendPageMenu, labelNew, widgetShowAll,
+        widgetShowAll,
         onWidgetKeyPressEvent, windowSetPosition, windowSetDefaultSize,
         notebookNew, windowNew,
         )
 import GI.Gtk.Enums (Orientation(..), WindowType(..), WindowPosition(..))
 import GI.Gdk (keyvalName, getEventKeyKeyval, getEventKeyState)
 import GI.Gdk.Flags (ModifierType(..))
-import GI.Gdk.Structs.RGBA (RGBA, newZeroRGBA, rGBAParse)
-import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 
-import qualified Highlighting
 import Highlighting(HighlightCond(Keys, Expr))
 
 import qualified Text.Read as TR
 
-import Data.GI.Base
 import qualified GI.Gtk as Gtk
 
 
@@ -75,43 +69,12 @@ main = do
       [ModifierTypeControlMask] ->
         getEventKeyKeyval e >>= keyvalName >>= \case
           Just "n" -> do
-
-            -- Create a new text tag table and a buffer for the text view
-            tagTable <- Gtk.new Gtk.TextTagTable []
-            txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-
-            -- Create a TextTag for highlighting 'hello' word
-            _ <- Highlighting.initializeHighlighting rules tagTable
-
-
-            -- Create editor view
-            editorView <- createEditorView txtBuffer
-
-
-            -- When the buffer content changes, check for instances of 'hello' and apply the tag
-            _ <- Gtk.on txtBuffer #changed $ do
-                Highlighting.applyRules rules separators txtBuffer
-
-            -- Create notebook tab.
-            tab <- notebookTabNew (Just "New tab") Nothing
-            menuLabel <- labelNew (Nothing :: Maybe Text)
-
-            -- Add widgets in notebook.
-            _ <- notebookAppendPageMenu notebook editorView (Just $ ntBox tab) (Just menuLabel)
-
-            -- Start spinner animation when create tab.
-            notebookTabStart tab
-
-            -- Stop spinner animation after finish load.
-            _ <- timeoutAdd PRIORITY_DEFAULT 5000 $ notebookTabStop tab >> return False
-
-            -- Close tab when click button.
-            _ <- onToolButtonClicked (ntCloseButton tab) $ do
-              index <- notebookPageNum notebook editorView
-              notebookRemovePage notebook index
-            return True
+              createAndAddNotebookTab notebook rules separators
           _ -> return False
       _ -> return False
+
+  -- Create one open tab
+  _ <- createAndAddNotebookTab notebook rules separators
 
   -- Show window.
   box <- boxNew OrientationVertical 0
@@ -121,4 +84,3 @@ main = do
   widgetShowAll window
   _ <- onWidgetDestroy window mainQuit
   Gtk.main
-
