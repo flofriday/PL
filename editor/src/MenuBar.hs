@@ -1,8 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
 
 module MenuBar(
   MenuDescription,
@@ -14,15 +11,14 @@ import Control.Monad (void)
 import Data.Text (Text)
 import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuItemNewWithMnemonic, menuItemSetSubmenu, menuShellAppend, menuNew, onMenuItemActivate, mainQuit)
 import qualified Data.Text as T
+import qualified GI.Gtk as Gtk
 
 import MenuFileActions (openFileDialog, saveFileDialog)
-import qualified Highlighting
-import qualified Notebook
 
 type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
-menuBarDescr :: MenuDescription
-menuBarDescr =
-    [ ("_File", [ ("Open", Just openFileDialog)
+menuBarDescr :: Gtk.Notebook -> MenuDescription
+menuBarDescr notebook =
+    [ ("_File", [ ("Open (Ctrl + O)", Just (openFileDialog notebook))
                 , ("Save", Just saveFileDialog)
                 , ("New Tab (Ctrl + N)", Nothing)
                 , ("_Quit", Just mainQuit)

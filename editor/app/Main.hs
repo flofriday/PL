@@ -1,8 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedLabels #-}
-
+{-# LANGUAGE MonoLocalBinds #-}
 module Main(main) where
 
 import GI.Gtk
@@ -17,11 +17,10 @@ import GI.Gdk (keyvalName, getEventKeyKeyval, getEventKeyState)
 import GI.Gdk.Flags (ModifierType(..))
 
 import qualified GI.Gtk as Gtk
-
 import qualified Notebook
-import qualified Highlighting
+import qualified MenuFileActions
 import MenuBar
-
+import Data.GI.Base
 
 -- | Main
 main :: IO ()
@@ -32,13 +31,14 @@ main = do
   -- Create window, notebook and menubar
   window <- windowNew WindowTypeToplevel
   notebook <- notebookNew
-  menuBar <- createMenuBar menuBarDescr
+  menuBar <- createMenuBar $ menuBarDescr notebook
 
   -- Set window.
   windowSetDefaultSize window 800 600
   windowSetPosition window WindowPositionCenter
   setWindowTitle window "Hello World."
 
+  
   -- Handle key press action.
   _ <- onWidgetKeyPressEvent window $ \e ->
     -- Create new tab when user press Ctrl+n
@@ -46,12 +46,19 @@ main = do
       [ModifierTypeControlMask] ->
         getEventKeyKeyval e >>= keyvalName >>= \case
           Just "n" -> do
-              Notebook.createAndAddTab notebook Highlighting.rules Highlighting.separators "New Tab"
+              tagTable <- Gtk.new Gtk.TextTagTable []
+              txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+              Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
+          Just "o" -> do
+              MenuFileActions.openFileDialog notebook
+              return True
           _ -> return False
       _ -> return False
 
-  -- Create one open tab
-  _ <- Notebook.createAndAddTab notebook Highlighting.rules Highlighting.separators "New Tab"
+  -- Create a new text tag table and a buffer for the text view
+  tagTable <- Gtk.new Gtk.TextTagTable []
+  txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+  _ <- Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
 
   -- Show window.
   box <- boxNew OrientationVertical 0
@@ -61,3 +68,4 @@ main = do
   widgetShowAll window
   _ <- onWidgetDestroy window mainQuit
   Gtk.main
+

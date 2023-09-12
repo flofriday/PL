@@ -1,16 +1,15 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 module Notebook(
-  createAndAddTab
+  createAndAddTab,
+  tabSetName,
 ) where
 
 import Control.Monad
-import Control.Monad.IO.Class
 import Control.Exception (catch)
 import Data.Maybe
 import Data.Text (Text)
@@ -18,26 +17,16 @@ import GI.Gtk
        (containerRemove, IsContainer, boxReorderChild, widgetGetParent,
         IsWidget, IsBox, imageNewFromPixbuf, iconThemeLoadIcon,
         iconThemeGetDefault, Image, spinnerStop, widgetShow, spinnerStart,
-        labelSetText, setWindowTitle, boxPackStart, toolButtonNew,
-        spinnerNew, boxNew, mainQuit, onWidgetDestroy, containerAdd,
-        notebookRemovePage, notebookPageNum, onToolButtonClicked,
-        notebookAppendPageMenu, labelNew, widgetShowAll, textViewNew,
-        windowSetPosition, windowSetDefaultSize,
-        notebookNew, windowNew, ToolButton, Label, Spinner, Box
-        ,menuItemNewWithLabel, menuItemNewWithMnemonic,
-        onMenuItemActivate, menuShellAppend, menuItemSetSubmenu, menuNew,
-        menuBarNew
+        labelSetText, boxPackStart, toolButtonNew,
+        spinnerNew, boxNew, labelNew, widgetShowAll, ToolButton, Label, Spinner, Box
+        
         )
 import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
 import qualified GI.Gtk as Gtk
-import GI.Gdk (keyvalName, getEventKeyKeyval)
-import Data.GI.Base.Attributes (AttrOp(..), set)
-import Data.GI.Base.BasicTypes (UnexpectedNullPointerReturn(..))
 import Data.GI.Base
 import qualified Highlighting
-import Highlighting(HighlightCond(Keys, Expr))
 
 data NotebookTab =
     NotebookTab {ntBox          :: Box
@@ -47,14 +36,10 @@ data NotebookTab =
                 ,ntSize         :: Int}
 
 -- Create new tab and link with highlighter
-createAndAddTab :: Gtk.Notebook -> [(String, String, HighlightCond)] -> [Char] -> Text -> IO Bool
-createAndAddTab notebook rules separators name = do
-    -- Create a new text tag table and a buffer for the text view
-    tagTable <- Gtk.new Gtk.TextTagTable []
-    txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-
+createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
+createAndAddTab notebook name txtBuffer tagTable = do
     -- Create a TextTag for highlighting 'hello' word
-    _ <- Highlighting.initializeHighlighting rules tagTable
+    _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
 
     -- Create text view.
     textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer]
@@ -62,7 +47,7 @@ createAndAddTab notebook rules separators name = do
 
     -- When the buffer content changes, check for instances of 'hello' and apply the tag
     _ <- Gtk.on txtBuffer #changed $ do
-        Highlighting.applyRules rules separators txtBuffer
+        Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
 
     -- Create notebook tab.
     tab <- tabNew (Just name) Nothing
@@ -75,7 +60,7 @@ createAndAddTab notebook rules separators name = do
     tabStart tab
 
     -- Stop spinner animation after finishing loading.
-    timeoutAdd PRIORITY_DEFAULT 5000 $ tabStop tab >> return False
+    _ <- timeoutAdd PRIORITY_DEFAULT 5000 $ tabStop tab >> return False
 
     -- Close tab when clicking the button.
     _ <- Gtk.onToolButtonClicked (ntCloseButton tab) $ do
