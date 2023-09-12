@@ -25,9 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      FileOperations
       Highlighting
       Lib
+      MenuBar
       MenuFileActions
       Notebook
       UIComponents
