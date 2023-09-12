@@ -50,27 +50,7 @@ import qualified Highlighting
 import Highlighting(HighlightCond(Keys, Expr))
 
 import Notebook
-
-createMenuBar descr
-    = do bar <- menuBarNew
-         mapM_ (createMenu bar) descr
-         return bar
-    where
-      createMenu bar (name,items)
-          = do menu <- menuNew
-               item <- menuItemNewWithLabelOrMnemonic name
-               menuItemSetSubmenu item (Just menu)
-               menuShellAppend bar item
-               mapM_ (createMenuItem menu) items
-      createMenuItem menu (name,action)
-          = do item <- menuItemNewWithLabelOrMnemonic name
-               menuShellAppend menu item
-               case action of
-                 Just act -> onMenuItemActivate item act
-                 Nothing  -> onMenuItemActivate item (return ())
-      menuItemNewWithLabelOrMnemonic name
-          | '_' `elem` T.unpack name = menuItemNewWithMnemonic name
-          | otherwise                = menuItemNewWithLabel name
+import UIComponents
 
 menuBarDescr
     = [ ("_File", [ ("Open", Nothing)
