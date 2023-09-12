@@ -3,22 +3,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module UIComponents(
-  MenuDescription,
-  createMenuBar,
-  menuBarDescr,
   createEditorView
 ) where
 import qualified GI.Gtk as Gtk
 
-import Control.Monad (void)
-import Data.Text (Text)
-import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuItemNewWithMnemonic, menuItemSetSubmenu, menuShellAppend, menuNew, onMenuItemActivate, mainQuit)
-import qualified GI.Gtk as Gtk
-import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8)
-import Data.GI.Base
-
-import MenuFileActions (openFileDialog, saveFileDialog)
+import Data.GI.Base ( AttrOp((:=)) )
 
 
 -- TODO: Add UI Components
