@@ -1,0 +1,58 @@
+(let
+    (built
+        (lambda
+            (lst counter)
+            (if (<= counter 10)
+                # if counter smaller than goal, append counter to list
+                (built
+                    (+ lst (list counter)) # append counter to list
+                    (+ counter 1) # increase counter by one
+                )
+                # else return lst
+                lst
+            )
+        )
+    )
+    (print (built (list) 2))
+)
+
+# works correct
+# (let
+#     (
+#         (built
+#             (lambda
+#                 (lst counter)
+#                 (print counter)
+#             )
+#         )
+#         (y 2)
+#     )
+#     (if (<= y 2)
+#         (print y)
+#         (print 0)
+#     )
+#     (built (list) 2)
+# )
+
+
+
+# should work but doesnt...
+# the first calls function evaluates to some lambda
+# but it doesn't find x in scope
+# (
+#     (
+#         (lambda
+#             (y)
+#
+#             (lambda
+#                 (x)
+#                 (print x)
+#             )
+#
+#         )
+#         2
+#     )
+#     1
+# )
+
+# ( ( (lambda (y) ( (lambda (x) (print x)) ) ) 2 ) 1)

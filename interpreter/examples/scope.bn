@@ -1,0 +1,7 @@
+# This should crash
+
+(let (f (lambda (x) (print y)))
+    (let (y 5)
+        (f 3)
+    )
+ )

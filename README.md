@@ -19,7 +19,7 @@ python bunt.py
 
 ### Development
 
-We are using [black](https://github.com/psf/black) to format the code. 
+We are using [black](https://github.com/psf/black) to format the code.
 
 
 ## Editor
