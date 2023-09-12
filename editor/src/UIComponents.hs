@@ -69,7 +69,6 @@ createMenuBar descr = do
       | otherwise                = menuItemNewWithLabel name
 
 
--- | Deprecated!
 createEditorView :: Gtk.TextBuffer -> IO Gtk.ScrolledWindow
 createEditorView txtBuffer = do
     scrollWindow <- Gtk.scrolledWindowNew (Nothing :: Maybe Gtk.Adjustment) (Nothing :: Maybe Gtk.Adjustment)
