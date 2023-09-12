@@ -1,19 +1,15 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 module Notebook(
-  notebookTabNew,
-  notebookTabStart,
-  notebookTabStop,
-  NotebookTab(..)
+  createAndAddTab,
+  tabSetName,
 ) where
 
 import Control.Monad
-import Control.Monad.IO.Class
 import Control.Exception (catch)
 import Data.Maybe
 import Data.Text (Text)
@@ -21,24 +17,18 @@ import GI.Gtk
        (containerRemove, IsContainer, boxReorderChild, widgetGetParent,
         IsWidget, IsBox, imageNewFromPixbuf, iconThemeLoadIcon,
         iconThemeGetDefault, Image, spinnerStop, widgetShow, spinnerStart,
-        labelSetText, setWindowTitle, boxPackStart, toolButtonNew,
-        spinnerNew, boxNew, mainQuit, onWidgetDestroy, containerAdd,
-        notebookRemovePage, notebookPageNum, onToolButtonClicked,
-        notebookAppendPageMenu, labelNew, widgetShowAll, textViewNew,
-        windowSetPosition, windowSetDefaultSize,
-        notebookNew, windowNew, ToolButton, Label, Spinner, Box
-        ,menuItemNewWithLabel, menuItemNewWithMnemonic,
-        onMenuItemActivate, menuShellAppend, menuItemSetSubmenu, menuNew,
-        menuBarNew
+        labelSetText, boxPackStart, toolButtonNew,
+        spinnerNew, boxNew, labelNew, widgetShowAll, ToolButton, Label, Spinner, Box
+        
         )
-import qualified GI.Gtk as Gtk (main, init)
+import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
-
-import GI.Gdk (keyvalName, getEventKeyKeyval)
-import Data.GI.Base.Attributes (AttrOp(..), set)
-import Data.GI.Base.BasicTypes (UnexpectedNullPointerReturn(..))
+import qualified GI.Gtk as Gtk
 import Data.GI.Base
+import qualified Highlighting
+import qualified UIComponents
+
 data NotebookTab =
     NotebookTab {ntBox          :: Box
                 ,ntSpinner      :: Spinner
@@ -46,11 +36,46 @@ data NotebookTab =
                 ,ntCloseButton  :: ToolButton
                 ,ntSize         :: Int}
 
+-- Create new tab and link with highlighter
+createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
+createAndAddTab notebook name txtBuffer tagTable = do
+    -- Create a TextTag for highlighting 'hello' word
+    _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
+
+    -- Create text view.
+    textView <- UIComponents.createEditorView txtBuffer
+    Gtk.widgetShowAll textView -- must show before adding to the notebook
+    -- When the buffer content changes, check for instances of 'hello' and apply the tag
+    _ <- Gtk.on txtBuffer #changed $ do
+        Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
+
+
+    -- Create notebook tab.
+    tab <- tabNew (Just name) Nothing
+    menuLabel <- labelNew (Nothing :: Maybe Text)
+
+    -- Add widgets in notebook.
+    _ <- Gtk.notebookAppendPageMenu notebook textView (Just $ ntBox tab) (Just menuLabel)
+
+    -- Start spinner animation when creating the tab.
+    tabStart tab
+
+    -- Stop spinner animation after finishing loading.
+    _ <- timeoutAdd PRIORITY_DEFAULT 5000 $ tabStop tab >> return False
+
+    -- Close tab when clicking the button.
+    _ <- Gtk.onToolButtonClicked (ntCloseButton tab) $ do
+        index <- Gtk.notebookPageNum notebook textView
+        Gtk.notebookRemovePage notebook index
+
+    return True
+
+
 -- | Create notebook tab.
-notebookTabNew :: Maybe Text -> Maybe Int -> IO NotebookTab
-notebookTabNew name size = do
+tabNew :: Maybe Text -> Maybe Int -> IO NotebookTab
+tabNew name size = do
   -- Init.
-  let iconSize = fromMaybe 12 size
+  let iconSize = fromMaybe 0 size
   box <- boxNew OrientationHorizontal 0
   spinner <- spinnerNew
   label <- labelNew name
@@ -59,28 +84,28 @@ notebookTabNew name size = do
 
   -- Show.
   boxPackStart box label False False 0
-  boxPackStart box closeButton False False 0
+  boxPackStart box closeButton False False 5
   widgetShowAll box
 
   return $ NotebookTab box spinner label closeButton iconSize
 
 -- | Set tab name.
-notebookTabSetName :: NotebookTab -> Text -> IO ()
-notebookTabSetName tab =
+tabSetName :: NotebookTab -> Text -> IO ()
+tabSetName tab =
   labelSetText (ntLabel tab)
 
 -- | Start spinner animation.
-notebookTabStart :: NotebookTab -> IO ()
-notebookTabStart NotebookTab {ntBox     = box
+tabStart :: NotebookTab -> IO ()
+tabStart NotebookTab {ntBox     = box
                              ,ntSpinner = spinner
                              ,ntSize    = size} = do
-  boxTryPack box spinner False False (Just 0) (size `div` 2)
+  boxTryPack box spinner False False (Just 0) (size `div` 5)
   spinnerStart spinner
   widgetShow spinner
 
 -- | Stop spinner animation.
-notebookTabStop :: NotebookTab -> IO ()
-notebookTabStop NotebookTab {ntBox     = box
+tabStop :: NotebookTab -> IO ()
+tabStop NotebookTab {ntBox     = box
                             ,ntSpinner = spinner} = do
   containerTryRemove box spinner
   spinnerStop spinner

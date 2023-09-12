@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use when" #-}
 
 module MenuFileActions(
     openFileDialog,
@@ -10,13 +10,14 @@ module MenuFileActions(
 ) where
 
 import qualified GI.Gtk as Gtk
-import Data.GI.Base
-
-
+import Data.GI.Base ( AttrOp((:=)), new )
+import Data.Text (pack)
+import qualified Notebook
+import System.FilePath ( takeFileName )
 
 -- Function to display the open file dialog
-openFileDialog :: IO ()
-openFileDialog = do
+openFileDialog :: Gtk.Notebook -> IO ()
+openFileDialog notebook = do
     -- Create a new file chooser dialog
     dialog <- new Gtk.FileChooserDialog
                 [#title := "Open File", #action := Gtk.FileChooserActionOpen]
@@ -27,18 +28,22 @@ openFileDialog = do
 
     res <- #run dialog
 
-    if res == 1
+    if res == fromIntegral (fromEnum Gtk.ResponseTypeAccept)
       then do
-          -- TODO implement file read into buffer
-          -- Just filename <- Gtk.fileChooserGetFilename dialog
-          -- buffer <- Gtk.new Gtk.TextBuffer []
-          -- Gtk.textBufferSetText buffer (unpack filename) (-1)
+          Just filePath <- Gtk.fileChooserGetFilename dialog
+          let justFilename = takeFileName filePath
+          tagTable <- Gtk.new Gtk.TextTagTable []
+          buffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+          contents <- readFile filePath
+          let textContents = pack contents  -- Convert String to Text
+          Gtk.textBufferSetText buffer textContents (-1)
+          _ <- Notebook.createAndAddTab notebook (pack justFilename) buffer tagTable
           return ()
       else return ()
 
     #destroy dialog
 
-saveFileDialog :: IO ()
+saveFileDialog ::  IO ()
 saveFileDialog = do
     dialog <- new Gtk.FileChooserDialog [#title := "Save File"]
     _ <- #addButton dialog
