@@ -25,10 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      FileChooser
       FileOperations
       Highlighting
       Lib
+      MenuFileActions
       Notebook
       UIComponents
   other-modules:
@@ -38,10 +38,13 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , filepath
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , glib
     , haskell-gi-base
+    , process
     , text
   default-language: Haskell2010
 
@@ -56,10 +59,13 @@ executable editor-exe
   build-depends:
       base >=4.7 && <5
     , editor
+    , filepath
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , glib
     , haskell-gi-base
+    , process
     , text
 
 test-suite editor-test
@@ -73,9 +79,12 @@ test-suite editor-test
   build-depends:
       base >=4.7 && <5
     , editor
+    , filepath
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , glib
     , haskell-gi-base
+    , process
     , text
   default-language: Haskell2010

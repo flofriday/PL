@@ -1,5 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module UIComponents(
   MenuDescription,
@@ -9,11 +12,11 @@ module UIComponents(
 
 import Control.Monad (void)
 import Data.Text (Text)
-import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuItemNewWithMnemonic, menuItemSetSubmenu, menuShellAppend, menuNew, onMenuItemActivate)
+import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuItemNewWithMnemonic, menuItemSetSubmenu, menuShellAppend, menuNew, onMenuItemActivate, mainQuit)
 import qualified Data.Text as T
 
+import MenuFileActions (openFileDialog, saveFileDialog)
 
-import qualified FileOperations
 
 -- TODO: Add UI Components
 -- haskell-gi examples can be found here https://github.com/haskell-gi/gi-gtk-examples/tree/master
@@ -22,16 +25,16 @@ import qualified FileOperations
 type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
 menuBarDescr :: MenuDescription
 menuBarDescr =
-    [ ("_File", [ ("Open", Nothing)
-                , ("Save", Nothing)
-                , ("_Quit", Nothing)
+    [ ("_File", [ ("Open", Just openFileDialog)
+                , ("Save", Just saveFileDialog)
+                , ("New Tab (Ctrl + N)", Nothing)
+                , ("_Quit", Just mainQuit)
                 ]
       )
     , ("Help", [ ("_Help", Nothing)
                ]
       )
     ]
-    
 
 createMenuBar :: MenuDescription -> IO MenuBar
 createMenuBar descr = do

@@ -26,6 +26,9 @@ dependencies:
 - text
 - gi-glib
 - gi-gdk
+- process
+- filepath
+- glib
 
 ghc-options:
 - -Wall
