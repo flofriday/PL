@@ -2,6 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLabels #-}
+
 module Main where
 
 import Control.Monad
@@ -42,6 +45,9 @@ import Data.Maybe (isJust)
 
 import Data.GI.Base
 import qualified GI.Gtk as Gtk
+
+import qualified Highlighting
+import Highlighting(HighlightCond(Keys, Expr))
 
 data NotebookTab =
     NotebookTab {ntBox          :: Box
@@ -106,13 +112,32 @@ main = do
         getEventKeyKeyval e >>= keyvalName >>= \case
           Just "n" -> do
 
-            -- TODO add Highlighting here
+            -- HIGHLIGHTING
+            -- Create a new text tag table and a buffer for the text view
+            tagTable <- Gtk.new Gtk.TextTagTable []
+            txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+            ------ create highlight rules -----
+            -- number recognitions lambda
+            let isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)
+            -- highlight rules
+            let rules =
+                  [ ("keywords", "blue", Keys ["func"])
+                  , ("number_literals", "red", Expr isStringInt)
+                  ]
+            -- word separators
+            let separators = [' ', '(', ')', '\n']
+
+            -- Create a TextTag for highlighting 'hello' word
+            _ <- Highlighting.initializeHighlighting rules tagTable
 
             -- Create text view.
-            textView <- textViewNew
+            textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer]
             widgetShowAll textView -- must show before add notebook,
                                    -- otherwise notebook won't display child widget
                                    -- even have add in notebook.
+            -- When the buffer content changes, check for instances of 'hello' and apply the tag
+            _ <- Gtk.on txtBuffer #changed $ do
+                Highlighting.applyRules rules separators txtBuffer
 
             -- Create notebook tab.
             tab <- notebookTabNew (Just "New tab") Nothing
@@ -216,4 +241,3 @@ containerTryRemove parent widget = do
 -- | Maybe.
 (?>=) :: Monad m => Maybe a -> (a -> m ()) -> m ()
 m ?>= f = maybe (return ()) f m
-
