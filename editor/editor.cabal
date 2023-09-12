@@ -28,6 +28,7 @@ library
       FileOperations
       Highlighting
       Lib
+      Notebook
       UIComponents
   other-modules:
       Paths_editor

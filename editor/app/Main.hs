@@ -49,12 +49,7 @@ import qualified GI.Gtk as Gtk
 import qualified Highlighting
 import Highlighting(HighlightCond(Keys, Expr))
 
-data NotebookTab =
-    NotebookTab {ntBox          :: Box
-                ,ntSpinner      :: Spinner
-                ,ntLabel        :: Label
-                ,ntCloseButton  :: ToolButton
-                ,ntSize         :: Int}
+import Notebook
 
 createMenuBar descr
     = do bar <- menuBarNew
@@ -88,6 +83,19 @@ menuBarDescr
         )
       ]
 
+-- HIGHLIGHTING
+-- number recognitions lambda
+isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)
+-- highlight rules
+rules =
+      [ ("keywords", "blue", Keys ["lambda", "let", "defun"])
+      , ("number_literals", "cyan", Expr isStringInt)
+      , ("brackets", "purple", Keys ["(", ")"])
+      , ("boolean", "green", Keys ["true", "false"])
+      ]
+-- word separators
+separators = [' ', '(', ')', '\n']
+
 -- | Main
 main :: IO ()
 main = do
@@ -112,20 +120,9 @@ main = do
         getEventKeyKeyval e >>= keyvalName >>= \case
           Just "n" -> do
 
-            -- HIGHLIGHTING
             -- Create a new text tag table and a buffer for the text view
             tagTable <- Gtk.new Gtk.TextTagTable []
             txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-            ------ create highlight rules -----
-            -- number recognitions lambda
-            let isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)
-            -- highlight rules
-            let rules =
-                  [ ("keywords", "blue", Keys ["func"])
-                  , ("number_literals", "red", Expr isStringInt)
-                  ]
-            -- word separators
-            let separators = [' ', '(', ')', '\n']
 
             -- Create a TextTag for highlighting 'hello' word
             _ <- Highlighting.initializeHighlighting rules tagTable
@@ -169,75 +166,3 @@ main = do
   onWidgetDestroy window mainQuit
   Gtk.main
 
-
-
--- Notebook.hs
-
-
-
--- | Create notebook tab.
-notebookTabNew :: Maybe Text -> Maybe Int -> IO NotebookTab
-notebookTabNew name size = do
-  -- Init.
-  let iconSize = fromMaybe 12 size
-  box <- boxNew OrientationHorizontal 0
-  spinner <- spinnerNew
-  label <- labelNew name
-  image <- imageNewFromIcon "window-close" iconSize
-  closeButton <- toolButtonNew (Just image) (Nothing::Maybe Text)
-
-  -- Show.
-  boxPackStart box label False False 0
-  boxPackStart box closeButton False False 0
-  widgetShowAll box
-
-  return $ NotebookTab box spinner label closeButton iconSize
-
--- | Set tab name.
-notebookTabSetName :: NotebookTab -> Text -> IO ()
-notebookTabSetName tab =
-  labelSetText (ntLabel tab)
-
--- | Start spinner animation.
-notebookTabStart :: NotebookTab -> IO ()
-notebookTabStart NotebookTab {ntBox     = box
-                             ,ntSpinner = spinner
-                             ,ntSize    = size} = do
-  boxTryPack box spinner False False (Just 0) (size `div` 2)
-  spinnerStart spinner
-  widgetShow spinner
-
--- | Stop spinner animation.
-notebookTabStop :: NotebookTab -> IO ()
-notebookTabStop NotebookTab {ntBox     = box
-                            ,ntSpinner = spinner} = do
-  containerTryRemove box spinner
-  spinnerStop spinner
-
--- | Create image widget with given icon name and size.
-imageNewFromIcon :: Text -> Int -> IO Image
-imageNewFromIcon iconName size = do
-  iconTheme <- iconThemeGetDefault
-  -- Function 'iconThemeLoadIcon' can scal  e icon with specified size.
-  pixbuf <- fromJust <$> iconThemeLoadIcon iconTheme iconName (fromIntegral size) [IconLookupFlagsUseBuiltin]
-  imageNewFromPixbuf (Just pixbuf)
-
--- | Try to packing widget in box.
--- If @child@ have exist parent, do nothing,
--- otherwise, add @child@ to @parent@.
-boxTryPack :: (IsBox parent, IsWidget child) => parent -> child -> Bool -> Bool -> Maybe Int -> Int -> IO ()
-boxTryPack box widget expand fill order space =
-    void (widgetGetParent widget)
-  `catch` (\(_ :: UnexpectedNullPointerReturn) -> do
-    boxPackStart box widget expand fill (fromIntegral space)
-    order ?>= (boxReorderChild box widget . fromIntegral))
-
--- | Try to remove child from parent.
-containerTryRemove :: (IsContainer parent, IsWidget child) => parent -> child -> IO ()
-containerTryRemove parent widget = do
-  hasParent <- (widgetGetParent widget >> return True) `catch` (\(_ :: UnexpectedNullPointerReturn) -> return False)
-  when hasParent $ containerRemove parent widget
-
--- | Maybe.
-(?>=) :: Monad m => Maybe a -> (a -> m ()) -> m ()
-m ?>= f = maybe (return ()) f m
