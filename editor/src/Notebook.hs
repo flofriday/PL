@@ -41,7 +41,8 @@ data NotebookTab =
 -- Create new tab and link with highlighter
 createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
 createAndAddTab notebook name txtBuffer tagTable = do
-    -- Create a TextTag for highlighting 'hello' word
+    -- Create text highlighting
+    _ <- BraceHighlighting.initializeBraceHighlighting txtBuffer
     _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
 
     -- Create text view.
@@ -50,9 +51,12 @@ createAndAddTab notebook name txtBuffer tagTable = do
 
     -- When the buffer content changes, apply highlighting
     Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
-
     _ <- Gtk.on txtBuffer #changed $ do
         Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
+
+    insertMark <- #getInsert txtBuffer
+    _ <- Gtk.onTextBufferMarkSet txtBuffer $ BraceHighlighting.applyBraceHighlighting txtBuffer
+
 
 
     -- Create notebook tab.
