@@ -52,17 +52,6 @@ import Highlighting(HighlightCond(Keys, Expr))
 import Notebook
 import UIComponents
 
-menuBarDescr
-    = [ ("_File", [ ("Open", Nothing)
-                  , ("Save", Nothing)
-                  , ("_Quit", Nothing)
-                  ]
-        )
-      , ("Help",  [ ("_Help", Nothing)
-                  ]
-        )
-      ]
-
 -- HIGHLIGHTING
 -- number recognitions lambda
 isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)

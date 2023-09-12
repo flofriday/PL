@@ -4,6 +4,7 @@
 module UIComponents(
   MenuDescription,
   createMenuBar,
+  menuBarDescr,
 ) where
 
 import Control.Monad (void)
@@ -17,7 +18,20 @@ import qualified FileOperations
 -- TODO: Add UI Components
 -- haskell-gi examples can be found here https://github.com/haskell-gi/gi-gtk-examples/tree/master
 
+
 type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
+menuBarDescr :: MenuDescription
+menuBarDescr =
+    [ ("_File", [ ("Open", Nothing)
+                , ("Save", Nothing)
+                , ("_Quit", Nothing)
+                ]
+      )
+    , ("Help", [ ("_Help", Nothing)
+               ]
+      )
+    ]
+    
 
 createMenuBar :: MenuDescription -> IO MenuBar
 createMenuBar descr = do
