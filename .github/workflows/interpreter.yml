@@ -1,0 +1,28 @@
+name: Run pytest
+
+on:
+    push:
+        paths:
+            - 'interpreter/**'
+            - '.github/workflows/interpreter.yml'
+    pull_request:
+        paths:
+            - 'interpreter/**'
+            - '.github/workflows/interpreter.yml'
+        branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11  # Specify the Python version you need
+
+    - name: Run pytest
+      run: pytest
