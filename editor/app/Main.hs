@@ -22,6 +22,7 @@ import GI.Gdk.Structs.RGBA (RGBA, newZeroRGBA, rGBAParse)
 import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 
 import qualified Highlighting
+import qualified BraceHighlighting
 import Highlighting(HighlightCond(Keys, Expr))
 
 import qualified Text.Read as TR
@@ -90,6 +91,8 @@ main = do
             -- When the buffer content changes, check for instances of 'hello' and apply the tag
             _ <- Gtk.on txtBuffer #changed $ do
                 Highlighting.applyRules rules separators txtBuffer
+                BraceHighlighting.applyBraceHighlighting txtBuffer
+
 
             -- Create notebook tab.
             tab <- notebookTabNew (Just "New tab") Nothing

@@ -77,12 +77,13 @@ createEditorView txtBuffer = do
     -- add text view styling
     styleProvider <- Gtk.cssProviderNew
     Gtk.cssProviderLoadFromData styleProvider
-        "textview text { \
+        "textview text{ \
         \    caret-color: #FFFFFF; \
         \    background-color: #1E1F22; \
         \    color: #BCBEC4; \
         \} \
-        \ textview { \
+        \textview { \
+        \    font-family: monospace; \
         \    font-size: 16px; \
         \}"
     screen <- Gtk.widgetGetScreen textView

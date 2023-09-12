@@ -25,6 +25,7 @@ dependencies:
 - haskell-gi-base
 - text
 - gi-glib
+- gi-pango
 - gi-gdk
 - process
 - filepath

@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      BraceHighlighting
       FileOperations
       Highlighting
       Lib
@@ -42,6 +43,7 @@ library
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , gi-pango
     , glib
     , haskell-gi-base
     , process
@@ -63,6 +65,7 @@ executable editor-exe
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , gi-pango
     , glib
     , haskell-gi-base
     , process
@@ -83,6 +86,7 @@ test-suite editor-test
     , gi-gdk
     , gi-glib
     , gi-gtk
+    , gi-pango
     , glib
     , haskell-gi-base
     , process
