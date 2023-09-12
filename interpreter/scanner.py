@@ -92,39 +92,54 @@ class Scanner:
         self._read_char()
         return token
 
-    # reads integer value or fails if it is an invalid integer
-    # Note: self._curr_char must be a valid integer at the time of calling
     def _read_int(self) -> int:
+        """Reads integer token or fails if it is an invalid integer.
+        Note: self._curr_char must be a valid integer at the time of calling.
+
+        :raises BuntError: If the integer is invalid.
+        :return: The parsed integer.
+        """
+
         curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         lit = self._read_while(_is_int_lit)
 
-        # raise error if integer is not separated
         if self._peek_char() not in ["(", ")"] + _whitespaces:
             raise BuntError(
                 "Integer Parsing Error",
                 self._span_location(curr_location),
-                f"Tried to parse integer... did not expect '{self._peek_char()}'"
-                f"Have you forgotten a space after {lit}?",
+                "I was parsing an integer and got confused here.",
+                f"Maybe you forgot a space after {lit}?",
             )
 
         return int(lit, 10)
 
     def _read_identifier(self) -> str:
+        """Reads an identifier or fails if it is an invalid identifier.
+       Note: self._curr_char must be a valid identifier start at the time of calling.
+
+       :raises BuntError: If the identifier is invalid.
+       :return: The parsed identifier.
+       """
+
         curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         lit = self._read_while(_is_valid_identifier_part)
 
-        # raise error if integer is not separated
         if self._peek_char() not in ["(", ")"] + _whitespaces:
             raise BuntError(
                 "Identifier Parsing Error",
                 self._span_location(curr_location),
-                f"Incorrect identifier! '{self._peek_char}' cannot be part of an identifier."
-                f"Have you forgotten a space after {lit}?",
+                "I was parsing an identifier but got confused here."
+                f"Maybe you forgot a space after {lit}?",
             )
 
         return lit
 
     def _read_while(self, cond: Callable[[chr], bool]) -> str:
+        """Read and consume the input while a condition is true.
+
+        :param cond: The condition.
+        :return: The consumed string.
+        """
         lit = str(self._curr_char)
         while cond(self._peek_char()):
             self._read_char()
@@ -133,6 +148,10 @@ class Scanner:
         return lit
 
     def _skip_whitespace(self) -> bool:
+        """Skip over all whitespace to the next character.
+
+        :return: A flag indicating if some whitespace was skipped.
+        """
         detect = False
         while self._curr_char in _whitespaces:
             detect = True
@@ -141,6 +160,10 @@ class Scanner:
         return detect
 
     def _skip_comments(self) -> bool:
+        """Skip the end of the line if it is a comment.
+
+        :return: A flag indicating if a comment was skipped.
+        """
         if self._curr_char != "#":
             return False
 
@@ -150,17 +173,27 @@ class Scanner:
         self._read_char()
         return True
 
-    # def _skip_until(chr: chr, inclusively: bool = False) -
-
     def _span_location(self, start: ScanPos) -> Location:
+        """Create a location from a starting point till the current position.
+
+        :param start: The starting position.
+        :return: A Location from the start till the current position.
+        """
+
         return Location(start.line, start.col, self._curr_loc.line, self._curr_loc.col)
 
     def _peek_char(self) -> Optional[chr]:
+        """Return the current character without consuming it.
+
+        :return: The current character.
+        """
+
         if self._readpos >= len(self._input):
             return "\n"
         return self._input[self._readpos]
 
     def _read_char(self):
+        """Consume the current character."""
         if self._readpos >= len(self._input):
             self._curr_char = None
         else:
@@ -177,12 +210,29 @@ class Scanner:
 
 
 def _is_valid_identifier_start(ch: chr) -> bool:
+    """Checks if a character can be used as the start of an identifier.
+
+    :param ch: The character to check.
+    :return: True if it is allowed and False otherwise.
+    """
+
     return ("a" <= ch <= "z") or ("A" <= ch <= "Z") or ch in "+-!$&*^_~:/%<>="
 
 
 def _is_valid_identifier_part(ch: chr) -> bool:
+    """Checks if a character can be used after the start of an identifier.
+
+    :param ch: The character to check.
+    :return: True if it is allowed and False otherwise.
+    """
+
     return _is_valid_identifier_start(ch) or _is_int_lit(ch)
 
 
 def _is_int_lit(ch: chr) -> bool:
+    """Checks if a character is part of an integer literal.
+
+    :param ch: The character to check.
+    :return: True if is allowed and False otherwise.
+    """
     return ch >= "0" and ch <= "9"

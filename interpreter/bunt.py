@@ -19,7 +19,6 @@ def main():
     parser.add_argument("filename", nargs="?")  # positional argument
     parser.add_argument("--dump-token", action="store_true")
     parser.add_argument("--dump-ast", action="store_true")
-    # parser.add_argument("--recursion-limit", )
     args = parser.parse_args()
 
     sys.setrecursionlimit(100_000)
@@ -31,7 +30,7 @@ def main():
 
 def interpret_repl(args):
     print("The Bunt Interpreter 🎨")
-    print("Written with ❤️  by Adi, Flo, Johannes and Paul")
+    print("Written with ❤️ by Adi, Flo, Johannes and Paul")
     print()
     env = generate_global_env()
     while True:
@@ -79,11 +78,6 @@ def interpret_repl(args):
             exit(0)
 
 
-def generate_global_env() -> Environment:
-    env = Environment(None)
-    add_builtin_functions(env)
-    return env
-
 
 def interpret_file(filename: str, args):
     with open(filename) as f:
@@ -117,6 +111,11 @@ def interpret_file(filename: str, args):
     except BuntError as error:
         print(error.formatted(source))
         exit(1)
+
+def generate_global_env() -> Environment:
+    env = Environment(None)
+    add_builtin_functions(env)
+    return env
 
 
 if __name__ == "__main__":

@@ -12,24 +12,45 @@ class NodeVisitor(ABC, Generic[VT]):
 
 
 class AstNode(ABC):
+    """A node in the AST (abstract syntax tree)"""
+
     @abstractmethod
     def visit(self, visitor: NodeVisitor[T]) -> T:
+        """Call the correct method in the visitor.
+
+        :param visitor: Any kind of NodeVisitor.
+        :return: The value the correct method in the visitor returned.
+        """
         pass
 
     @abstractmethod
     def location(self) -> Location:
+        """Return the location of the node in the source code.
+
+        :return: The Location.
+        """
         pass
 
     @abstractmethod
     def dump(self, indent: int) -> str:
+        """Dump the AST node and all its children to a string to inspect the parsed AST.
+
+        :param indent: The number of spaces by which this node dump should be prepended.
+        :return: The string with the dumped AST.
+        """
         pass
 
 
 class ExpressionNode(AstNode):
+    """A abstract node representing an expression."""
     pass
 
 
 class ProgramNode(AstNode):
+    """The AST node representing a whole program.
+
+    :param expressions: The expressions that make up the program.
+    """
     def __init__(self, expressions: list[ExpressionNode]):
         self.expressions = expressions
 
@@ -54,6 +75,11 @@ class ProgramNode(AstNode):
 
 
 class IdentifierNode(ExpressionNode):
+    """The AST node representing identifier literals.
+
+    :param name: The name of the identifier.
+    """
+
     def __init__(self, name: str, location: Location):
         self.name = name
         self._location = location
@@ -70,6 +96,11 @@ class IdentifierNode(ExpressionNode):
 
 
 class ListNode(ExpressionNode):
+    """The AST node representing list expressions (function calls)
+
+    :param expressions: All the expressions inside the parenthesis.
+    """
+
     def __init__(self, expressions: list[ExpressionNode], location: Location):
         self.expressions = expressions
         self._location = location
@@ -90,6 +121,11 @@ class ListNode(ExpressionNode):
 
 
 class IntNode(ExpressionNode):
+    """The AST node representing a integer literal.
+
+    :param value: The value of the integer literal.
+    """
+
     def __init__(self, value: int, location: Location):
         self.value = value
         self._location = location
@@ -106,6 +142,11 @@ class IntNode(ExpressionNode):
 
 
 class BoolNode(ExpressionNode):
+    """The AST node representing a bool literal.
+
+    :param value: The value of the boolean.
+    """
+
     def __init__(self, value: bool, location: Location):
         self.value = value
         self._location = location
@@ -122,6 +163,11 @@ class BoolNode(ExpressionNode):
 
 
 class NodeVisitor(ABC, Generic[VT]):
+    """A visitor class that can be inherited from to implement the visitor pattern.
+    On any node the visit method can be called with a subclass of this class as the argument and the node will call the
+    corresponding method of this class.
+    """
+
     @abstractmethod
     def by_prog(self, node: ProgramNode) -> VT:
         pass

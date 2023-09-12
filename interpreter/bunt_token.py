@@ -3,6 +3,11 @@ from location import Location
 
 
 class Token(ABC):
+    """The token type used by bunt.
+
+    :param location: The location of the token.
+    """
+
     location: Location
 
     def __init__(self, location: Location) -> None:

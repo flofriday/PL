@@ -4,13 +4,22 @@ from value import BuntValue
 
 
 class Environment(dict):
+    """A environment into which identifiers are mapped to values.
+
+    :param previous: The enclosing environment
+    :param variables: A dictionary that maps variable names to the values the hold.
+    """
 
     def __init__(self, previous: Optional[Self] = None):
         super().__init__()
         self.previous: Optional[Self] = previous
         self.variables: dict[str, BuntValue] = {}
 
-    def is_global(self):
+    def is_global(self) -> bool:
+        """Returns wether or not the environment is the global one.
+
+        :return: True if it is global, False otherwise.
+        """
         return self.previous is None
 
     def __getitem__(self, name: str) -> BuntValue:
