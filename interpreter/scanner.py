@@ -19,7 +19,7 @@ class Scanner:
         self._pos = 0
         self._readpos = 0
         self._curr_char: Optional[chr] = None
-        self.curr_loc =  ScanPos(1, 0)
+        self._curr_loc =  ScanPos(1, 0)
         self._read_char()
 
     def scan(self) -> List[Token]:
@@ -36,7 +36,7 @@ class Scanner:
         while self._skip_whitespace() or self._skip_comments():
             pass
 
-        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
+        curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         token = None
 
         match self._curr_char:
@@ -79,7 +79,7 @@ class Scanner:
     # reads integer value or fails if it is an invalid integer
     # Note: self._curr_char must be a valid integer at the time of calling
     def _read_int(self) -> int:
-        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
+        curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         lit = self._read_while(_is_int_lit)
 
         # raise error if integer is not separated
@@ -94,7 +94,7 @@ class Scanner:
         return int(lit, 10)
 
     def _read_identifier(self) -> str:
-        curr_location = ScanPos(line=self.curr_loc.line, col=self.curr_loc.col)
+        curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         lit = self._read_while(_is_valid_identifier_part)
 
         # raise error if integer is not separated
@@ -137,7 +137,7 @@ class Scanner:
     # def _skip_until(chr: chr, inclusively: bool = False) -
 
     def _span_location(self, start: ScanPos) -> Location:
-        return Location(start.line, start.col, self.curr_loc.line, self.curr_loc.col)
+        return Location(start.line, start.col, self._curr_loc.line, self._curr_loc.col)
 
     def _peek_char(self) -> Optional[chr]:
         if self._readpos >= len(self._input):
@@ -151,11 +151,11 @@ class Scanner:
             self._curr_char = self._input[self._readpos]
 
             if self._curr_char == "\n":
-                self.curr_loc.line += 1
-                self.curr_loc.col = -1
+                self._curr_loc.line += 1
+                self._curr_loc.col = -1
 
         if self._curr_char is not None:
-            self.curr_loc.col += 1
+            self._curr_loc.col += 1
             self._pos = self._readpos
             self._readpos += 1
 
