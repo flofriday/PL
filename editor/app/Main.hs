@@ -36,7 +36,7 @@ main = do
   -- Set window.
   windowSetDefaultSize window 800 600
   windowSetPosition window WindowPositionCenter
-  setWindowTitle window "Hello World."
+  setWindowTitle window "Editor"
 
   
   -- Handle key press action.
