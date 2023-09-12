@@ -81,7 +81,7 @@ getWords text separators = extractWords (0, T.unpack text)
       
         -- If 'rest' is not empty, create a list containing a tuple with information about the separator (which is 
         -- the first character in 'rest'), otherwise create an empty list.
-        sepInfo = if null rest then [] else [(T.pack [head rest], i + wordLen, i + wordLen)] 
+        sepInfo = [(T.pack [head rest], i + wordLen, i + wordLen) | not (null rest)]
       in 
         -- Create a tuple containing information about the 'word', add it to the list followed by 'sepInfo', and 
         -- recursively call 'extractWords' to process the rest of the string (excluding the first character which 

@@ -6,7 +6,7 @@
 module Main(main) where
 
 import Data.Maybe
-import Data.Text (Text)
+import Data.Text (Text, pack, unpack)
 import GI.Gtk
        (setWindowTitle, boxPackStart,
         boxNew, mainQuit, onWidgetDestroy, containerAdd,
@@ -18,6 +18,7 @@ import GI.Gtk
 import GI.Gtk.Enums (Orientation(..), WindowType(..), WindowPosition(..))
 import GI.Gdk (keyvalName, getEventKeyKeyval, getEventKeyState)
 import GI.Gdk.Flags (ModifierType(..))
+import GI.Gdk.Structs.RGBA (RGBA, newZeroRGBA, rGBAParse)
 import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 
 import qualified Highlighting
@@ -41,10 +42,10 @@ isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)
 -- highlight rules
 rules :: [(String, String, HighlightCond)]
 rules =
-      [ ("keywords", "blue", Keys ["lambda", "let", "defun"])
-      , ("number_literals", "cyan", Expr isStringInt)
-      , ("brackets", "purple", Keys ["(", ")"])
-      , ("boolean", "green", Keys ["true", "false"])
+      [ ("keywords", "#C08E71", Keys ["lambda", "let", "defun"])
+      , ("number_literals", "#55A9B6", Expr isStringInt)
+      , ("brackets", "#BD80B8", Keys ["(", ")"])
+      , ("boolean", "#6BA6EF", Keys ["true", "false"])
       ]
 
 -- word separators
@@ -82,11 +83,11 @@ main = do
             -- Create a TextTag for highlighting 'hello' word
             _ <- Highlighting.initializeHighlighting rules tagTable
 
-            -- Create text view.
-            textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer]
-            widgetShowAll textView -- must show before add notebook,
-                                   -- otherwise notebook won't display child widget
-                                   -- even have add in notebook.
+
+            -- Create editor view
+            editorView <- createEditorView txtBuffer
+
+
             -- When the buffer content changes, check for instances of 'hello' and apply the tag
             _ <- Gtk.on txtBuffer #changed $ do
                 Highlighting.applyRules rules separators txtBuffer
@@ -96,7 +97,7 @@ main = do
             menuLabel <- labelNew (Nothing :: Maybe Text)
 
             -- Add widgets in notebook.
-            _ <- notebookAppendPageMenu notebook textView (Just $ ntBox tab) (Just menuLabel)
+            _ <- notebookAppendPageMenu notebook editorView (Just $ ntBox tab) (Just menuLabel)
 
             -- Start spinner animation when create tab.
             notebookTabStart tab
@@ -106,7 +107,7 @@ main = do
 
             -- Close tab when click button.
             _ <- onToolButtonClicked (ntCloseButton tab) $ do
-              index <- notebookPageNum notebook textView
+              index <- notebookPageNum notebook editorView
               notebookRemovePage notebook index
             return True
           _ -> return False
