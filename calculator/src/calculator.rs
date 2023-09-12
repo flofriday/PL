@@ -5,7 +5,7 @@ use crate::{
     cmd_stream::CmdStream, datastack::DataStack, input_stream::InputStream,
     op_decimal::handle_decimal_place_construction_mode, op_execution::handle_execution_mode,
     op_integer::handle_integer, op_string::handle_string_construction_mode,
-    out_stream::OutputStream, register_set::RegisterSet, value::Value,
+    out_stream::OutputStream, register_set::RegisterSet,
 };
 
 pub const EXECUTION_MODE: i8 = 0;
@@ -58,20 +58,11 @@ impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
         // peeks command, it is actually consumed by repective op mode handlers
         // this design leads to an infinite loop if the character is not handled
         while let Some(cmd) = self.cmd_stream.poll() {
-            //println!("cmd: {}", cmd);
-            //match cmd {
-            /*' ' => {
-                self.op_mode = 0;
-                continue;
-            }
-            _ => {*/
             match self.op_mode {
                 ..=-2 => handle_decimal_place_construction_mode(self, cmd), // decimal place construction
                 -1 => handle_integer(self, cmd),                            // integer construction
                 0 => handle_execution_mode(self, cmd),                      // execution
                 _ => handle_string_construction_mode(self, cmd),            // string construction
-                                                                             //}
-                                                                             //}
             }
         }
     }
@@ -111,13 +102,13 @@ impl<IN: Read, OUT: Write> fmt::Display for Calculator<IN, OUT> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    // let complex = String::from("1(8)(9~)(4!4$_1+$@)@");
+    use crate::value::Value;
 
-    //     let my_string2 = String::from("(8)(9~)(4!4$_1+$@)@");
+    use super::*;
 
     #[test]
     fn test_factorial_3() {
+        // This is the last example from the assignment
         let factorial_of_3 = String::from("3(3!3!1-2!1=()5!(4!4$_1+$@)@2$*)3!3$3!@2$");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&factorial_of_3);
         calc.run();
@@ -126,6 +117,7 @@ mod tests {
 
     #[test]
     fn test_single() {
+        // This is the first example from the assignment.
         let single = String::from("5.1 12.3+");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&single);
         calc.run();
@@ -133,7 +125,17 @@ mod tests {
     }
 
     #[test]
+    fn test_apply_example() {
+        // This is the third example from the assignment.
+        let code = String::from("4 3(2*)@+");
+        let mut calc = Calculator::new(&code);
+        calc.run();
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(10)));
+    }
+
+    #[test]
     fn test_triple() {
+        // This is the second example from the assignment.
         let triple = String::from("15 2 3 4+*-");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&triple);
         calc.run();
@@ -150,6 +152,7 @@ mod tests {
 
     #[test]
     fn test_complex() {
+        // This is the fourth example from the assignment (the first from examples)
         let complex = String::from("1(8)(9~)(4!4$_1+$@)@");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&complex);
         calc.run();
