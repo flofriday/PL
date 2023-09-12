@@ -301,7 +301,7 @@ def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
     else:
         _invalid_operand_error(
             msg="Expected both operands to be integer",
-            tip="Usage `(>- 2 1)`",
+            tip="Usage `(>= 2 1)`",
             location=args[0].location(),
         )
 
@@ -329,7 +329,7 @@ def less_equal_than_builtin(ast_args: list[AstNode], interpreter):
     else:
         _invalid_operand_error(
             msg="Expected both operands to be integer",
-            tip="Usage `(< 1 2)`",
+            tip="Usage `(<= 1 2)`",
             location=args[0].location(),
         )
 

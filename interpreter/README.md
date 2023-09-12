@@ -1,4 +1,4 @@
-# Bunt 🎨
+root at ☁️ 522f16a94f10 in /workspaces/PermaplanT on 210-complete-seed-overview# Bunt 🎨
 
 ## The Bunt Interpreter
 
@@ -105,3 +105,16 @@ Maybe, with defun in the future or just with let and lambda.
 - IO: print, println
 - Lists: take, pop, +
 
+## Tests
+
+```sh
+root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ pytest
+```
+
+### Coverage Report
+
+```sh
+root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage run -m pytest
+root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage report -m
+root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage html
+```
