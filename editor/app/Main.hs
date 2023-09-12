@@ -25,7 +25,7 @@ import qualified GI.Gtk as Gtk
 
 
 import Notebook
-import UIComponents
+import MenuBar
 
 -- HIGHLIGHTING
 

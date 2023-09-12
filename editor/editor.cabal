@@ -28,6 +28,7 @@ library
       FileOperations
       Highlighting
       Lib
+      MenuBar
       MenuFileActions
       Notebook
       UIComponents
