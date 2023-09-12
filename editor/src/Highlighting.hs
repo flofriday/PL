@@ -8,12 +8,16 @@ module Highlighting (
   HighlightCond(Keys, Expr),
   initializeHighlighting, -- ^ Initializes the highlighting by creating text tags for each rule and adding them to the text tag table.
   applyRules,            -- ^ Applies the highlighting rules to the text present in the buffer, based on the provided separators.
+  rules,
+  separators,
 ) where
 
 import Data.GI.Base
 import qualified GI.Gtk as Gtk
 import qualified Data.Text as T
 import Control.Monad (when, forM, forM_)
+import qualified Text.Read as TR
+import Data.Maybe
 
 -- | Specifies the condition for highlighting a word: either being a member of a set of keywords (Keys),
 -- or satisfying a given predicate function (Expr).
@@ -25,6 +29,25 @@ type HighlightRule = (String, String, HighlightCond)
 
 type Separators = [Char] -- ^ A list of characters to be considered as word separators.
 type WordInfo = (T.Text, Int, Int) -- ^ A tuple representing a word or separator in the text (string, start offset, end offset).
+
+-- HIGHLIGHTING
+
+-- number recognitions lambda
+isStringInt :: String -> Bool
+isStringInt = isJust . (TR.readMaybe :: String -> Maybe Int)
+
+-- highlight rules
+rules :: [(String, String, HighlightCond)]
+rules =
+      [ ("keywords", "blue", Keys ["lambda", "let", "defun"])
+      , ("number_literals", "cyan", Expr isStringInt)
+      , ("brackets", "purple", Keys ["(", ")"])
+      , ("boolean", "green", Keys ["true", "false"])
+      ]
+
+-- word separators
+separators :: [Char]
+separators = [' ', '(', ')', '\n']
 
 -- | Initializes highlighting by creating and adding text tags for each rule in the tag table.
 initializeHighlighting :: [HighlightRule] -> Gtk.TextTagTable -> IO [Gtk.TextTag]

@@ -16,11 +16,8 @@ import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuIt
 import qualified Data.Text as T
 
 import MenuFileActions (openFileDialog, saveFileDialog)
-
-
--- TODO: Add UI Components
--- haskell-gi examples can be found here https://github.com/haskell-gi/gi-gtk-examples/tree/master
-
+import qualified Highlighting
+import qualified Notebook
 
 type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
 menuBarDescr :: MenuDescription

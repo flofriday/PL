@@ -6,7 +6,7 @@
 {-# LANGUAGE OverloadedLabels #-}
 
 module Notebook(
-  createAndAddNotebookTab
+  createAndAddTab
 ) where
 
 import Control.Monad
@@ -28,7 +28,7 @@ import GI.Gtk
         onMenuItemActivate, menuShellAppend, menuItemSetSubmenu, menuNew,
         menuBarNew
         )
-import qualified GI.Gtk as Gtk (main, init)
+import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
 import qualified GI.Gtk as Gtk
@@ -47,8 +47,8 @@ data NotebookTab =
                 ,ntSize         :: Int}
 
 -- Create new tab and link with highlighter
-createAndAddNotebookTab :: Gtk.Notebook -> [(String, String, HighlightCond)] -> [Char] -> IO Bool
-createAndAddNotebookTab notebook rules separators = do
+createAndAddTab :: Gtk.Notebook -> [(String, String, HighlightCond)] -> [Char] -> Text -> IO Bool
+createAndAddTab notebook rules separators name = do
     -- Create a new text tag table and a buffer for the text view
     tagTable <- Gtk.new Gtk.TextTagTable []
     txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
@@ -65,17 +65,17 @@ createAndAddNotebookTab notebook rules separators = do
         Highlighting.applyRules rules separators txtBuffer
 
     -- Create notebook tab.
-    tab <- notebookTabNew (Just "New tab") Nothing
+    tab <- tabNew (Just name) Nothing
     menuLabel <- labelNew (Nothing :: Maybe Text)
 
     -- Add widgets in notebook.
     _ <- Gtk.notebookAppendPageMenu notebook textView (Just $ ntBox tab) (Just menuLabel)
 
     -- Start spinner animation when creating the tab.
-    notebookTabStart tab
+    tabStart tab
 
-    -- -- Stop spinner animation after finishing loading.
-    -- _ <- timeoutAdd Gtk.PRIORITY_DEFAULT 5000 $ notebookTabStop tab >> return False
+    -- Stop spinner animation after finishing loading.
+    timeoutAdd PRIORITY_DEFAULT 5000 $ tabStop tab >> return False
 
     -- Close tab when clicking the button.
     _ <- Gtk.onToolButtonClicked (ntCloseButton tab) $ do
@@ -86,10 +86,10 @@ createAndAddNotebookTab notebook rules separators = do
 
 
 -- | Create notebook tab.
-notebookTabNew :: Maybe Text -> Maybe Int -> IO NotebookTab
-notebookTabNew name size = do
+tabNew :: Maybe Text -> Maybe Int -> IO NotebookTab
+tabNew name size = do
   -- Init.
-  let iconSize = fromMaybe 12 size
+  let iconSize = fromMaybe 0 size
   box <- boxNew OrientationHorizontal 0
   spinner <- spinnerNew
   label <- labelNew name
@@ -98,28 +98,28 @@ notebookTabNew name size = do
 
   -- Show.
   boxPackStart box label False False 0
-  boxPackStart box closeButton False False 0
+  boxPackStart box closeButton False False 5
   widgetShowAll box
 
   return $ NotebookTab box spinner label closeButton iconSize
 
 -- | Set tab name.
-notebookTabSetName :: NotebookTab -> Text -> IO ()
-notebookTabSetName tab =
+tabSetName :: NotebookTab -> Text -> IO ()
+tabSetName tab =
   labelSetText (ntLabel tab)
 
 -- | Start spinner animation.
-notebookTabStart :: NotebookTab -> IO ()
-notebookTabStart NotebookTab {ntBox     = box
+tabStart :: NotebookTab -> IO ()
+tabStart NotebookTab {ntBox     = box
                              ,ntSpinner = spinner
                              ,ntSize    = size} = do
-  boxTryPack box spinner False False (Just 0) (size `div` 2)
+  boxTryPack box spinner False False (Just 0) (size `div` 5)
   spinnerStart spinner
   widgetShow spinner
 
 -- | Stop spinner animation.
-notebookTabStop :: NotebookTab -> IO ()
-notebookTabStop NotebookTab {ntBox     = box
+tabStop :: NotebookTab -> IO ()
+tabStop NotebookTab {ntBox     = box
                             ,ntSpinner = spinner} = do
   containerTryRemove box spinner
   spinnerStop spinner
