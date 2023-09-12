@@ -27,6 +27,7 @@ import GI.Gtk.Flags (IconLookupFlags(..))
 import qualified GI.Gtk as Gtk
 import Data.GI.Base
 import qualified Highlighting
+import qualified BraceHighlighting
 import qualified UIComponents
 
 data NotebookTab =
@@ -45,7 +46,10 @@ createAndAddTab notebook name txtBuffer tagTable = do
     -- Create text view.
     textView <- UIComponents.createEditorView txtBuffer
     Gtk.widgetShowAll textView -- must show before adding to the notebook
-    -- When the buffer content changes, check for instances of 'hello' and apply the tag
+
+    -- When the buffer content changes, apply highlighting
+    Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
+
     _ <- Gtk.on txtBuffer #changed $ do
         Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
 
