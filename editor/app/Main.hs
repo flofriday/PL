@@ -45,13 +45,19 @@ main = do
     getEventKeyState e >>= \case
       [ModifierTypeControlMask] ->
         getEventKeyKeyval e >>= keyvalName >>= \case
+          -- Save file keybinding
           Just "n" -> do
               tagTable <- Gtk.new Gtk.TextTagTable []
               txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
               Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
+          -- Open file keybinding
           Just "o" -> do
               MenuFileActions.openFileDialog notebook
               return True
+          -- Save file keybinding
+          Just "s" -> do
+              -- MenuFileActions.saveFileDialog notebook
+              return False
           _ -> return False
       _ -> return False
 
@@ -59,6 +65,8 @@ main = do
   tagTable <- Gtk.new Gtk.TextTagTable []
   txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
   _ <- Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
+
+  -- TODO Handle notebook page switch
 
   -- Show window.
   box <- boxNew OrientationVertical 0
