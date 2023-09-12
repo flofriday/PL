@@ -9,11 +9,17 @@ _whitespaces = [" ", "\n", "\t", "\r"]
 
 @dataclass
 class ScanPos:
+    """A position in the source code.
+
+    :param line: The line of the position (starting at 1)
+    :param col: The column of the position (starting at 1)
+    """
     line: int
     col: int
 
 
 class Scanner:
+    """The scanner (aka. lexer) splits the input text into tokens."""
     def __init__(self, input: str) -> None:
         self._input = input
         self._pos = 0
@@ -23,6 +29,11 @@ class Scanner:
         self._read_char()
 
     def scan(self) -> List[Token]:
+        """Runs the scanner.
+
+        :raises BuntError: if the input is invalid on a token level.
+        :return: List of tokens.
+        """
         tokens: List[Token] = []
         while True:
             token = self._next_token()
@@ -33,6 +44,11 @@ class Scanner:
         return tokens
 
     def _next_token(self) -> Token:
+        """Generates the next token.
+
+        :raises BuntError: if it cannot be
+        :return: The next token
+        """
         while self._skip_whitespace() or self._skip_comments():
             pass
 
