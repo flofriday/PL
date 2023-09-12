@@ -87,7 +87,6 @@ main = do
             -- Create editor view
             editorView <- createEditorView txtBuffer
 
-
             -- When the buffer content changes, check for instances of 'hello' and apply the tag
             _ <- Gtk.on txtBuffer #changed $ do
                 Highlighting.applyRules rules separators txtBuffer
