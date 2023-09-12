@@ -7,6 +7,7 @@
 module Notebook(
   createAndAddTab,
   tabSetName,
+  getCurrentBuffer,
 ) where
 
 import Control.Monad
@@ -138,3 +139,25 @@ containerTryRemove parent widget = do
 m ?>= f = maybe (return ()) f m
 
 
+getCurrentBuffer :: Gtk.Notebook -> IO (Maybe Gtk.TextBuffer)
+getCurrentBuffer notebook = do
+    pageNum <- Gtk.notebookGetCurrentPage notebook
+    page <- Gtk.notebookGetNthPage notebook pageNum
+    case page of
+        Nothing -> return Nothing
+        Just pg -> do
+            container <- Gtk.castTo Gtk.Container pg
+            case container of
+              Nothing -> return Nothing
+              Just cnt -> do
+                  children <- Gtk.containerGetChildren cnt
+                  case listToMaybe children of
+                      Nothing -> return Nothing
+                      Just child -> do
+                          textView <- Gtk.castTo Gtk.TextView child
+                          case textView of
+                              Nothing -> return Nothing
+                              Just tv -> do
+                                  buffer <- Gtk.textViewGetBuffer tv
+                                  return $ Just buffer
+  

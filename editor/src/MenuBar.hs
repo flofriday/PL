@@ -19,7 +19,7 @@ type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
 menuBarDescr :: Gtk.Notebook -> MenuDescription
 menuBarDescr notebook =
     [ ("_File", [ ("Open (Ctrl + O)", Just (openFileDialog notebook))
-                , ("Save", Just saveFileDialog)
+                , ("Save (Ctrl + S)", Just (saveFileDialog notebook))
                 , ("New Tab (Ctrl + N)", Nothing)
                 , ("_Quit", Just mainQuit)
                 ]
