@@ -97,7 +97,7 @@ class Interpreter(NodeVisitor[BuntValue]):
 
         raise BuntError(
             header="Not a function",
-            message=f"You tried to call a value of type {func.type()} which is not a function.",
+            message=f"You tried to call a value of type {func.type_name()} which is not a function.",
             location=node.location()
         )
 

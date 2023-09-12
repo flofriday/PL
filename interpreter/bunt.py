@@ -64,7 +64,7 @@ def interpret_repl(args):
 
             interpreter = Interpreter(env)
             value = interpreter.exec(ast)
-            print(value.string())
+            print(value)
 
         except BuntErrors as errors:
             for error in errors.errors:
