@@ -6,7 +6,8 @@ from bunt_ast import (
     IntNode,
     BoolNode,
     ListNode,
-    IdentifierNode, AstNode,
+    IdentifierNode,
+    AstNode,
 )
 from value import BuiltinFuncValue, BuntValue, BoolValue, IntValue, ListValue, FuncValue
 from bunt_error import BuntError
@@ -43,11 +44,10 @@ class Interpreter(NodeVisitor[BuntValue]):
             raise BuntError(
                 "Missing function",
                 node.location(),
-                "You need to specify a function that you call"
+                "You need to specify a function that you call",
             )
 
         func = node.expressions[0].visit(self)
-
 
         if isinstance(func, BuiltinFuncValue):
             func: BuiltinFuncValue = func
@@ -78,7 +78,7 @@ class Interpreter(NodeVisitor[BuntValue]):
                 raise BuntError(
                     header="Invalid number of arguments",
                     message=f"The function resulting of {node.expressions[0]} expects {func.arity} arguments, but you "
-                            f"provided {len(args)}",
+                    f"provided {len(args)}",
                     location=node.location(),
                 )
 
@@ -98,7 +98,7 @@ class Interpreter(NodeVisitor[BuntValue]):
         raise BuntError(
             header="Not a function",
             message=f"You tried to call a value of type {func.type_name()} which is not a function.",
-            location=node.location()
+            location=node.location(),
         )
 
     def by_int(self, node: IntNode) -> BuntValue:

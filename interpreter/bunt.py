@@ -42,7 +42,7 @@ def interpret_repl(args):
             # Keep reading if there are more left parenthesis tokens than right
             # ones.
             while sum(1 for t in tokens if isinstance(t, TLeftParan)) > sum(
-                    1 for t in tokens if isinstance(t, TRightParan)
+                1 for t in tokens if isinstance(t, TRightParan)
             ):
                 tokens = tokens[:-1]
                 source += "\n" + input("... ")
@@ -78,7 +78,6 @@ def interpret_repl(args):
             exit(0)
 
 
-
 def interpret_file(filename: str, args):
     with open(filename) as f:
         source = f.read()
@@ -111,6 +110,7 @@ def interpret_file(filename: str, args):
     except BuntError as error:
         print(error.formatted(source))
         exit(1)
+
 
 def generate_global_env() -> Environment:
     env = Environment(None)
