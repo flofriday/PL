@@ -13,13 +13,16 @@
 
 (// ---- Read Evaluate Print Loop --- )1$
 
-(> )"'
-(@") 
-(1! (Error: empty or malformed input
+(
+    (> )"'
+    (@"(
+)") 
+    (1$ (Error: empty or malformed input
 Tip: try surrounding it in parenthesis)") 
-4!
-_
-1+ $ @
+    4!
+    _
+    1+ $ @
 
-
-"""""""""""
+    a@    
+)A
+a@
