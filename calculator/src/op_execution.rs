@@ -254,13 +254,17 @@ fn op_int_conversion<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _:
 
 fn op_copy<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
     let len = context.stack().len() as i64;
-    let Some(Integer(val)) = context.stack().pop() else { return };
-    if val >= 1 && val <= len {
-        let index = len - val;
-        let Some(nth) = context.stack().nth((index) as usize) else { return };
-        let elem = nth.clone();
-        context.stack().push(elem);
+    let Some(Integer(val)) = context.stack().peek() else { return };
+    if val < 1 || val > len {
+        print!("Not correct range");
+        return;
     }
+
+    let index = len - val;
+    let Some(nth) = context.stack().nth((index) as usize) else { return };
+    let elem = nth.clone();
+    context.stack().pop().unwrap();
+    context.stack().push(elem);
 }
 
 fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {

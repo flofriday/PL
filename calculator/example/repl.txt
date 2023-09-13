@@ -1,0 +1,25 @@
+(// Welcome message)1$
+
+(Welcome to the calculator REPL 🎉
+)"
+
+(// Setup Builtin "functions")1$
+
+(// TODO: S for sort)1$
+(// TODO: A for arithmetic mean)1$
+(// TODO: V for variance)1$
+(// TODO: M for median)1$
+
+
+(// ---- Read Evaluate Print Loop --- )1$
+
+(> )"'
+(@") 
+(1! (Error: empty or malformed input
+Tip: try surrounding it in parenthesis)") 
+4!
+_
+1+ $ @
+
+
+"""""""""""
