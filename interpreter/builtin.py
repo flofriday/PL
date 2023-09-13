@@ -403,32 +403,31 @@ def take_builtin(ast_args: list[AstNode], interpreter):
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
-    if a.value >= len(b.value) or a.value < 0:
-        raise BuntError(
-            header="Invalid Index",
-            message=f"index {a.value} is not present in the list",
-            tip="Use the len function to check the length of the list",
-        )
+        if a.value >= len(b.value) or a.value < 0:
+            raise BuntError(
+                header="Invalid Index",
+                message=f"index {a.value} is not present in the list",
+                tip="Use the len function to check the length of the list",
+            )
+        return b.value[a.value]
     else:
         _invalid_operand_error(
             msg="Expected first operand to be an integer and second operand to be a list",
             tip="Usage `(take 0 (list 1))`",
             location=args[0].location(),
         )
-    return b.value[a.value]
-
 
 def drop_builtin(ast_args: list[AstNode], interpreter):
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
-    if a.value < 0:
-        raise BuntError(
-            header="Invalid Index",
-            message=f"index {a.value} should not be below 0",
-            tip="Use a positive number as first arg",
-        )
+        if a.value < 0:
+            raise BuntError(
+                header="Invalid Index",
+                message=f"index {a.value} should not be below 0",
+                tip="Use a positive number as first arg",
+            )
     else:
         _invalid_operand_error(
             msg="Expected first operand to be an integer and second operand to be a list",
@@ -524,7 +523,7 @@ def init_builtin(ast_args: list[AstNode], interpreter):
             tip="Usage `(last (list 1))`",
             location=args[0].location(),
         )
-    return a.value[0:-1]
+    return ListValue(a.value[0:-1])
 
 
 def print_builtin(ast_args: list[AstNode], interpreter):
