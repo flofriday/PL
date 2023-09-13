@@ -47,9 +47,8 @@ main = do
         getEventKeyKeyval e >>= keyvalName >>= \case
           -- Save file keybinding
           Just "n" -> do
-              tagTable <- Gtk.new Gtk.TextTagTable []
-              txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-              Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
+              Notebook.createAndAddDefaultTab notebook
+              return True
           -- Open file keybinding
           Just "o" -> do
               MenuFileActions.openFileDialog notebook
@@ -62,9 +61,7 @@ main = do
       _ -> return False
 
   -- Create a new text tag table and a buffer for the text view
-  tagTable <- Gtk.new Gtk.TextTagTable []
-  txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-  _ <- Notebook.createAndAddTab notebook "New Tab" txtBuffer tagTable
+  Notebook.createAndAddDefaultTab notebook
 
   -- TODO Handle notebook page switch
 
@@ -76,4 +73,3 @@ main = do
   widgetShowAll window
   _ <- onWidgetDestroy window mainQuit
   Gtk.main
-

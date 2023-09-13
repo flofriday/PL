@@ -2,10 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE MonoLocalBinds #-}
 
 module Notebook(
   createAndAddTab,
+  createAndAddDefaultTab,
   tabSetName,
   getCurrentBuffer,
 ) where
@@ -26,7 +28,7 @@ import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
 import qualified GI.Gtk as Gtk
-import Data.GI.Base
+import Data.GI.Base ( AttrOp((:=)), UnexpectedNullPointerReturn )
 import qualified Highlighting
 import qualified BraceHighlighting
 import qualified IdentifierHighlighting
@@ -38,6 +40,13 @@ data NotebookTab =
                 ,ntLabel        :: Label
                 ,ntCloseButton  :: ToolButton
                 ,ntSize         :: Int}
+
+createAndAddDefaultTab :: Gtk.Notebook -> IO ()
+createAndAddDefaultTab notebook = do
+    tagTable <- Gtk.new Gtk.TextTagTable []
+    txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+    _ <- createAndAddTab notebook "New Tab" txtBuffer tagTable
+    return ()
 
 -- Create new tab and link with highlighter
 createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
