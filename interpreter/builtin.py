@@ -40,7 +40,7 @@ def let_builtin(args, interpreter):
     The `let` expression allows to bind values to variables that can be used in
     its inner expressions.
 
-    Raise `BuntError` if let structure is invalid or variable was already bound.
+    :raises `BuntError` if let structure is invalid or variable was already bound.
 
     :param args: the variable bindings (arg[0]) and subsequent expressions (arg[1:])
     :param interpreter: the currently executing interpreter
@@ -115,7 +115,7 @@ def lambda_builtin(args, interpreter):
 
     The `lambda` expression allows to define lambda functions with zero or more parameters.
 
-    Throws `BuntError` if params are not identifiers.
+    :raises `BuntError` if params are not identifiers.
 
     :param args: the param list (arg[0]) and lambda expression definition (arg[1])
     :param interpreter: the currently executing interpreter
