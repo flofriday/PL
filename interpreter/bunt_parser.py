@@ -21,6 +21,11 @@ from location import Location
 
 
 class Parser:
+    """A parser.
+
+    :param tokens: A list of tokens to be parsed.
+    """
+
     def __init__(self, tokens: list[Token]):
         self.errors: list[BuntError] = []
         self.tokens: list[Token] = tokens
@@ -29,6 +34,13 @@ class Parser:
         self._advance()
 
     def parse(self) -> ProgramNode:
+        """Start the parser
+
+        Raises a `BuntErrors` with all errors that happened during
+        parsing
+
+        :return: A `ProgramNode`
+        """
         program_node = self._parse_program()
 
         if self.errors != []:
@@ -37,15 +49,21 @@ class Parser:
         return program_node
 
     def _parse_program(self) -> ProgramNode:
-        expressions = []
-        # import pdb;
-        # breakpoint()
+        """Parse the program
+
+        :return: A `ProgramNode` containing expression nodes
+        """
+        expressions: list[ExpressionNode] = []
         while not self._at_end():
             expressions.append(self.parse_expression())
 
         return ProgramNode(expressions)
 
     def parse_expression(self) -> ExpressionNode:
+        """Parse one expression and advance in the token list
+
+        :return: An `ExpressionNode`
+        """
         if isinstance(self.current_token, TIdentifier):
             node = IdentifierNode(
                 self.current_token.literal(), self.current_token.location
@@ -82,6 +100,12 @@ class Parser:
         self._advance()
 
     def parse_list(self) -> ListNode:
+        """Parse a list expression
+
+        Appends an error if a parenthesis was not closed
+
+        :return: A `ListNode`
+        """
         left_paren = self.current_token
         self._advance()
 
@@ -109,12 +133,14 @@ class Parser:
         )
 
     def _advance(self):
+        """Advances to the next token"""
         self.index += 1
         if self.index < len(self.tokens):
             self.current_token = self.tokens[self.index]
         return self.current_token
 
     def _at_end(self) -> bool:
+        """Returns true if we are at a TEOF token or the last token, otherwise False"""
         return isinstance(self.tokens[self.index], TEOF) or self.index >= len(
             self.tokens
         )
