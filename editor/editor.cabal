@@ -28,6 +28,7 @@ library
       BraceHighlighting
       ErrorHighlighting
       Highlighting
+      IdentifierHighlighting
       Lib
       MenuBar
       MenuFileActions
@@ -42,6 +43,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , directory
     , filepath
     , gi-gdk
     , gi-glib
@@ -63,6 +65,7 @@ executable editor-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , editor
     , filepath
     , gi-gdk
@@ -84,6 +87,7 @@ test-suite editor-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , editor
     , filepath
     , gi-gdk

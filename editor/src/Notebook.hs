@@ -2,10 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE MonoLocalBinds #-}
 
 module Notebook(
   createAndAddTab,
+  createAndAddDefaultTab,
   tabSetName,
   getCurrentBuffer,
 ) where
@@ -26,10 +28,11 @@ import GI.GLib (timeoutAdd, pattern PRIORITY_DEFAULT)
 import GI.Gtk.Enums (Orientation(..))
 import GI.Gtk.Flags (IconLookupFlags(..))
 import qualified GI.Gtk as Gtk
-import Data.GI.Base
+import Data.GI.Base ( AttrOp((:=)), UnexpectedNullPointerReturn )
 import qualified Highlighting
 import qualified BraceHighlighting
 import qualified ErrorHighlighting
+import qualified IdentifierHighlighting
 import qualified UIComponents
 import qualified Tokenizer
 import qualified Parser
@@ -41,16 +44,24 @@ data NotebookTab =
                 ,ntCloseButton  :: ToolButton
                 ,ntSize         :: Int}
 
+createAndAddDefaultTab :: Gtk.Notebook -> IO ()
+createAndAddDefaultTab notebook = do
+    tagTable <- Gtk.new Gtk.TextTagTable []
+    txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
+    _ <- createAndAddTab notebook "New Tab" txtBuffer tagTable True
+    return ()
+
 -- Create new tab and link with highlighter
-createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
-createAndAddTab notebook name txtBuffer tagTable = do
+createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> Bool -> IO Bool
+createAndAddTab notebook name txtBuffer tagTable editable = do
     -- Create text highlighting
     _ <- BraceHighlighting.initializeBraceHighlighting txtBuffer
     _ <- ErrorHighlighting.initializeErrorHighlighting txtBuffer
+    _ <- IdentifierHighlighting.initializeIdentifierHighlighting txtBuffer
     _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
 
     -- Create text view.
-    textView <- UIComponents.createEditorView txtBuffer
+    textView <- UIComponents.createEditorView txtBuffer editable
     Gtk.widgetShowAll textView -- must show before adding to the notebook
 
     -- When the buffer content changes, apply highlighting
@@ -60,10 +71,7 @@ createAndAddTab notebook name txtBuffer tagTable = do
         ErrorHighlighting.checkSyntax txtBuffer
 
     insertMark <- #getInsert txtBuffer
-    _ <- Gtk.onTextBufferMarkSet txtBuffer $ \iter mark -> do
-        BraceHighlighting.applyBraceHighlighting txtBuffer iter mark
-
-
+    _ <- Gtk.onTextBufferMarkSet txtBuffer $ BraceHighlighting.applyBraceHighlighting txtBuffer
 
     -- Create notebook tab.
     tab <- tabNew (Just name) Nothing

@@ -12,19 +12,21 @@ import Data.Text (Text)
 import GI.Gtk (MenuBar, MenuItem, Menu, menuBarNew, menuItemNewWithLabel, menuItemNewWithMnemonic, menuItemSetSubmenu, menuShellAppend, menuNew, onMenuItemActivate, mainQuit)
 import qualified Data.Text as T
 import qualified GI.Gtk as Gtk
-
-import MenuFileActions (openFileDialog, saveFileDialog)
+import Notebook (createAndAddDefaultTab)
+import MenuFileActions (openFileDialog, saveFileDialog, openWelcomeFile, openAboutFile, openDocumentationFile)
 
 type MenuDescription = [(Text, [(Text, Maybe (IO ()))])]
 menuBarDescr :: Gtk.Notebook -> MenuDescription
 menuBarDescr notebook =
     [ ("_File", [ ("Open (Ctrl + O)", Just (openFileDialog notebook))
                 , ("Save (Ctrl + S)", Just (saveFileDialog notebook))
-                , ("New Tab (Ctrl + N)", Nothing)
+                , ("New Tab (Ctrl + N)", Just (createAndAddDefaultTab notebook))
                 , ("_Quit", Just mainQuit)
                 ]
       )
-    , ("Help", [ ("_Help", Nothing)
+    , ("Help", [ ("_Welcome", Just (openWelcomeFile notebook))
+                , ("_Documentation", Just (openDocumentationFile notebook))
+                , ("_About", Just (openAboutFile notebook))
                ]
       )
     ]
