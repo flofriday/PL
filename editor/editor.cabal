@@ -26,11 +26,14 @@ source-repository head
 library
   exposed-modules:
       BraceHighlighting
+      ErrorHighlighting
       Highlighting
       Lib
       MenuBar
       MenuFileActions
       Notebook
+      Parser
+      Tokenizer
       UIComponents
   other-modules:
       Paths_editor
