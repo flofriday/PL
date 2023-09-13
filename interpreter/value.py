@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from bunt_ast import ExpressionNode, AstNode, IdentifierNode
-from typing import Callable, Any
+from typing import Callable, Any, ForwardRef, Type
+
+Interpreter = ForwardRef("Interpreter")
 
 
 class BuntValue(ABC):
@@ -67,7 +69,7 @@ class BuiltinFuncValue(BuntValue):
     # The arguements are the real arguments to the function and the interpreter
     # We cannot type it here because of circular dependencies
     # FIXME: Fix later
-    func: Callable[[list[AstNode], Any], BuntValue]
+    func: Callable[[list[AstNode], Type[Interpreter]], BuntValue]
 
     def __str__(self) -> str:
         return f"<Builtin Function> Arity: {self.arity}"
