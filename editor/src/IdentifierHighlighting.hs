@@ -87,5 +87,5 @@ applyIdentifierHighlighting buffer iter separators = do
     highlightWord :: Gtk.TextBuffer -> Gtk.TextTag -> WordInfo -> IO ()
     highlightWord _buffer tag (_, start, end) = do
       startIter <- Gtk.textBufferGetIterAtOffset _buffer (fromIntegral start)
-      endIter <- Gtk.textBufferGetIterAtOffset _buffer (fromIntegral end)
+      endIter <- Gtk.textBufferGetIterAtOffset _buffer (fromIntegral end + 1)
       Gtk.textBufferApplyTag _buffer tag startIter endIter

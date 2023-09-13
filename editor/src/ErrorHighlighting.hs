@@ -30,9 +30,6 @@ initializeErrorHighlighting buffer = do
 
 checkSyntax :: Gtk.TextBuffer -> IO ()
 checkSyntax buffer = do
---    start <- Gtk.textBufferGetStartIter buffer
---    end <- Gtk.textBufferGetEndIter buffer
---    text <- Gtk.textBufferGetText buffer start end True
 
     tokens <- Tokenizer.tokenizeTextBuffer $ buffer
     let (exprs, errors) = Parser.parseTokens tokens
