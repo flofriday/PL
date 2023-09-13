@@ -4,9 +4,18 @@ from bunt_token import (
     TIdentifier,
     TInteger,
     TLeftParan,
-    TRightParan, TTrue, TFalse,
+    TRightParan,
+    TTrue,
+    TFalse,
 )
-from bunt_ast import ExpressionNode, IdentifierNode, IntNode, ProgramNode, ListNode, BoolNode
+from bunt_ast import (
+    ExpressionNode,
+    IdentifierNode,
+    IntNode,
+    ProgramNode,
+    ListNode,
+    BoolNode,
+)
 from bunt_error import BuntErrors, BuntError
 from location import Location
 
@@ -26,8 +35,6 @@ class Parser:
             raise BuntErrors(self.errors)
 
         return program_node
-
-
 
     def _parse_program(self) -> ProgramNode:
         expressions = []
@@ -101,13 +108,11 @@ class Parser:
             expressions, Location.merge(left_paren.location, right_paren.location)
         )
 
-
     def _advance(self):
         self.index += 1
         if self.index < len(self.tokens):
             self.current_token = self.tokens[self.index]
         return self.current_token
-
 
     def _at_end(self) -> bool:
         return isinstance(self.tokens[self.index], TEOF) or self.index >= len(

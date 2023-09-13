@@ -18,7 +18,9 @@ class ExecResult:
     stdout: str
 
 
-def exec_source(source: str, env: Optional[Environment] = None, fails: bool = False) -> ExecResult:
+def exec_source(
+    source: str, env: Optional[Environment] = None, fails: bool = False
+) -> ExecResult:
     if not env:
         env = generate_global_env()
 
@@ -32,10 +34,7 @@ def exec_source(source: str, env: Optional[Environment] = None, fails: bool = Fa
         ast = parser.parse()
         interpreter = Interpreter(env)
         result = interpreter.exec(ast)
-        return ExecResult(
-            result,
-            sys.stdout.getvalue()
-        )
+        return ExecResult(result, sys.stdout.getvalue())
 
     except BuntErrors as err:
         if fails:
