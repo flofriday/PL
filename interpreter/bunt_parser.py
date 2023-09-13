@@ -27,10 +27,10 @@ class Parser:
     """
 
     def __init__(self, tokens: list[Token]):
-        self.errors: list[BuntError] = []
-        self.tokens: list[Token] = tokens
-        self.current_token: Token  # The current token
-        self.index = -1
+        self._errors: list[BuntError] = []
+        self._tokens: list[Token] = tokens
+        self._current_token: Token  # The current token
+        self._index = -1
         self._advance()
 
     def parse(self) -> ProgramNode:
@@ -43,8 +43,8 @@ class Parser:
         """
         program_node = self._parse_program()
 
-        if self.errors != []:
-            raise BuntErrors(self.errors)
+        if self._errors != []:
+            raise BuntErrors(self._errors)
 
         return program_node
 
@@ -64,36 +64,36 @@ class Parser:
 
         :return: An `ExpressionNode`
         """
-        if isinstance(self.current_token, TIdentifier):
+        if isinstance(self._current_token, TIdentifier):
             node = IdentifierNode(
-                self.current_token.literal(), self.current_token.location
+                self._current_token.literal(), self._current_token.location
             )
             self._advance()
             return node
 
-        elif isinstance(self.current_token, TInteger):
-            inttoken: TInteger = self.current_token
+        elif isinstance(self._current_token, TInteger):
+            inttoken: TInteger = self._current_token
             node = IntNode(inttoken.number, inttoken.location)
             self._advance()
             return node
 
-        elif isinstance(self.current_token, TTrue):
-            node = BoolNode(True, self.current_token.location)
+        elif isinstance(self._current_token, TTrue):
+            node = BoolNode(True, self._current_token.location)
             self._advance()
             return node
 
-        elif isinstance(self.current_token, TFalse):
-            node = BoolNode(False, self.current_token.location)
+        elif isinstance(self._current_token, TFalse):
+            node = BoolNode(False, self._current_token.location)
             self._advance()
             return node
 
-        elif isinstance(self.current_token, TLeftParan):
+        elif isinstance(self._current_token, TLeftParan):
             return self.parse_list()
 
-        self.errors.append(
+        self._errors.append(
             BuntError(
                 "Invalid Syntax",
-                self.current_token.location,
+                self._current_token.location,
                 "This closing parenthesis doesn't have a matching opening one.",
             )
         )
@@ -106,27 +106,27 @@ class Parser:
 
         :return: A `ListNode`
         """
-        left_paren = self.current_token
+        left_paren = self._current_token
         self._advance()
 
         expressions = []
-        while not isinstance(self.current_token, TRightParan) and not self._at_end():
+        while not isinstance(self._current_token, TRightParan) and not self._at_end():
             expressions.append(self.parse_expression())
 
         # Error case
         if self._at_end():
-            self.errors.append(
+            self._errors.append(
                 BuntError(
                     "Invalid Syntax",
-                    self.current_token.location,
+                    self._current_token.location,
                     "I reached the end of the input before all parenthesis were closed.",
                     tip="Just add some at the end and hope for the best ;)",
                 )
             )
             # There is nothing more to parse so let's return all errors
-            raise BuntErrors(self.errors)
+            raise BuntErrors(self._errors)
 
-        right_paren = self.current_token
+        right_paren = self._current_token
         self._advance()
         return ListNode(
             expressions, Location.merge(left_paren.location, right_paren.location)
@@ -134,13 +134,13 @@ class Parser:
 
     def _advance(self):
         """Advances to the next token"""
-        self.index += 1
-        if self.index < len(self.tokens):
-            self.current_token = self.tokens[self.index]
-        return self.current_token
+        self._index += 1
+        if self._index < len(self._tokens):
+            self._current_token = self._tokens[self._index]
+        return self._current_token
 
     def _at_end(self) -> bool:
         """Returns true if we are at a TEOF token or the last token, otherwise False"""
-        return isinstance(self.tokens[self.index], TEOF) or self.index >= len(
-            self.tokens
+        return isinstance(self._tokens[self._index], TEOF) or self._index >= len(
+            self._tokens
         )

@@ -40,7 +40,7 @@ def let_builtin(args, interpreter):
     The `let` expression allows to bind values to variables that can be used in
     its inner expressions.
 
-    Throws `BuntError` if let structure is invalid or variable was already bound.
+    Raise `BuntError` if let structure is invalid or variable was already bound.
 
     :param args: the variable bindings (arg[0]) and subsequent expressions (arg[1:])
     :param interpreter: the currently executing interpreter
