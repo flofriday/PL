@@ -435,7 +435,7 @@ def drop_builtin(ast_args: list[AstNode], interpreter):
             tip="Usage `(drop 0 (list 1))`",
             location=args[0].location(),
         )
-    return ListValue(b.value[a.value :])
+    return ListValue(b.value[a.value :])  # noqa: E203
 
 
 def len_builtin(ast_args: list[AstNode], interpreter):
