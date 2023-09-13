@@ -30,6 +30,7 @@ dependencies:
 - process
 - filepath
 - glib
+- directory
 
 ghc-options:
 - -Wall

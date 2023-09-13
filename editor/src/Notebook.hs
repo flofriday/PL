@@ -45,19 +45,19 @@ createAndAddDefaultTab :: Gtk.Notebook -> IO ()
 createAndAddDefaultTab notebook = do
     tagTable <- Gtk.new Gtk.TextTagTable []
     txtBuffer <- Gtk.new Gtk.TextBuffer [#tagTable := tagTable]
-    _ <- createAndAddTab notebook "New Tab" txtBuffer tagTable
+    _ <- createAndAddTab notebook "New Tab" txtBuffer tagTable True
     return ()
 
 -- Create new tab and link with highlighter
-createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO Bool
-createAndAddTab notebook name txtBuffer tagTable = do
+createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable -> Bool -> IO Bool
+createAndAddTab notebook name txtBuffer tagTable editable = do
     -- Create text highlighting
     _ <- BraceHighlighting.initializeBraceHighlighting txtBuffer
     _ <- IdentifierHighlighting.initializeIdentifierHighlighting txtBuffer
     _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
 
     -- Create text view.
-    textView <- UIComponents.createEditorView txtBuffer
+    textView <- UIComponents.createEditorView txtBuffer editable
     Gtk.widgetShowAll textView -- must show before adding to the notebook
 
     -- When the buffer content changes, apply highlighting

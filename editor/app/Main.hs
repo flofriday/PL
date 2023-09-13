@@ -61,7 +61,7 @@ main = do
       _ -> return False
 
   -- Create a new text tag table and a buffer for the text view
-  Notebook.createAndAddDefaultTab notebook
+  MenuFileActions.openWelcomeFile notebook
 
   -- TODO Handle notebook page switch
 

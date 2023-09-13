@@ -13,10 +13,10 @@ import Data.GI.Base ( AttrOp((:=)) )
 -- TODO: Add UI Components
 -- haskell-gi examples can be found here https://github.com/haskell-gi/gi-gtk-examples/tree/master
 
-createEditorView :: Gtk.TextBuffer -> IO Gtk.ScrolledWindow
-createEditorView txtBuffer = do
+createEditorView :: Gtk.TextBuffer -> Bool -> IO Gtk.ScrolledWindow
+createEditorView txtBuffer editable = do
     scrollWindow <- Gtk.scrolledWindowNew (Nothing :: Maybe Gtk.Adjustment) (Nothing :: Maybe Gtk.Adjustment)
-    textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer, #leftMargin := 10, #topMargin := 10 ]
+    textView <- Gtk.new Gtk.TextView [#buffer := txtBuffer, #leftMargin := 10, #topMargin := 10, #editable := editable]
 
     -- add text view styling
     styleProvider <- Gtk.cssProviderNew
