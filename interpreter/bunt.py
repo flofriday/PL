@@ -11,6 +11,11 @@ from bunt_token import TRightParan, TLeftParan
 
 
 def main():
+    """
+    Main entry point for the bunt interpreter.
+
+    Handles command line arguments and either starts the REPL or interprets a file.
+    """
     parser = argparse.ArgumentParser(
         prog="bunt",
         description="The interpreter for the bunt programming language",
@@ -29,6 +34,14 @@ def main():
 
 
 def interpret_repl(args):
+    """
+    Start the REPL (Read-Eval-Print Loop) for the bunt interpreter.
+
+    Allows users to interactively enter commands which are then parsed, interpreted,
+    and executed, printing the result.
+
+    :param args: Command line arguments parsed from argparse.
+    """
     print("The Bunt Interpreter 🎨")
     print("Written with ❤️ by Adi, Flo, Johannes and Paul")
     print()
@@ -79,6 +92,12 @@ def interpret_repl(args):
 
 
 def interpret_file(filename: str, args):
+    """
+    Interpret and execute a bunt program from a file.
+
+    :param filename: Name of the file containing the bunt code.
+    :param args: Command line arguments parsed from argparse.
+    """
     with open(filename) as f:
         source = f.read()
 
@@ -113,6 +132,11 @@ def interpret_file(filename: str, args):
 
 
 def generate_global_env() -> Environment:
+    """
+    Generate a global environment with built-in functions added.
+
+    :return: Global Environment with built-in functions.
+    """
     env = Environment(None)
     add_builtin_functions(env)
     return env

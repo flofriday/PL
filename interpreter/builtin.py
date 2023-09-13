@@ -146,7 +146,27 @@ def lambda_builtin(args, interpreter):
     )
 
 
+
 def defun_builtin(args, interpreter):
+    """
+   `defun <name> ([<param>] ...) <expr>`
+
+   The `defun` expression allows the user to define named functions at the global scope level.
+   These functions can have zero or more parameters.
+
+   :raises `BuntError`:
+       - if the method is not called within the global scope
+       - if the function name is not an identifier
+       - if the parameters are not identifiers
+
+   :param args:
+       - args[0]: the function name
+       - args[1]: the param list
+       - args[2]: the function body expression
+
+   :param interpreter: the currently executing interpreter
+   :return: the function value after being defined in the interpreter's environment
+   """
     if not interpreter.env.is_global():
         raise BuntError(
             header="Invalid Scope",
@@ -548,11 +568,33 @@ def if_builtin(ast_args: list[AstNode], interpreter):
         return ast_args[2].visit(interpreter)
 
 
+#####################################
+#         LIST OPERATOR            #
+#####################################
+
+
+
 def list_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Convert AST nodes into a list value.
+    :param ast_args: A list of AST nodes.
+    :param interpreter: The currently executing interpreter.
+    :return: A ListValue containing the evaluated AST nodes.
+    """
     return ListValue(_eval_args(ast_args, interpreter))
 
 
 def take_builtin(ast_args: list[AstNode], interpreter):
+    """
+    Extract an element from a list at a given index.
+
+    Expects the first argument to be an integer (index) and the second to be a list.
+
+    :raises `BuntError`: if the index is out of bounds.
+    :param ast_args: A list containing the index and the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: Element at the given index from the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
@@ -572,6 +614,15 @@ def take_builtin(ast_args: list[AstNode], interpreter):
         )
 
 def drop_builtin(ast_args: list[AstNode], interpreter):
+    """
+    Drop the initial elements up to the specified index and return the rest.
+
+    Expects the first argument to be an integer (index) and the second to be a list.
+
+    :param ast_args: A list containing the index and the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue starting from the index to the end of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
@@ -592,7 +643,14 @@ def drop_builtin(ast_args: list[AstNode], interpreter):
 
 
 def len_builtin(ast_args: list[AstNode], interpreter) -> IntValue:
-    """"""
+    """
+    Compute the length of a given list.
+
+    :raises `BuntError`: if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: Integer value representing the length of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if not isinstance(args[0], ListValue):
         _invalid_operand_error(
@@ -606,6 +664,14 @@ def len_builtin(ast_args: list[AstNode], interpreter) -> IntValue:
 
 
 def head_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve the first element of a given list.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: The first element of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -625,6 +691,14 @@ def head_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
 
 
 def last_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve the last element of a given list.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: The last element of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -644,6 +718,14 @@ def last_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
 
 
 def tail_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve all elements of a list except the first one.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue containing all elements except the first one.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -663,6 +745,14 @@ def tail_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
 
 
 def init_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve all elements of a list except the last one.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue containing all elements except the last one.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -682,12 +772,26 @@ def init_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
 
 
 def print_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Print the first argument without a newline at the end.
+
+    :param ast_args: A list containing the argument to print.
+    :param interpreter: The currently executing interpreter.
+    :return: An empty ListValue.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     print(args[0])
     return ListValue([])
 
 
 def println_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Print the first argument with a newline at the end.
+
+    :param ast_args: A list containing the argument to print.
+    :param interpreter: The currently executing interpreter.
+    :return: An empty ListValue.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     print(args[0], end="\n")
     return ListValue([])
