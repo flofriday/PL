@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 
 module IdentifierHighlighting
   ( initializeIdentifierHighlighting,
@@ -7,10 +8,11 @@ module IdentifierHighlighting
   )
 where
 
-import Data.GI.Base
+import Data.GI.Base ( AttrOp((:=)) )
 import qualified GI.Gtk as Gtk
 import qualified Data.Text as T
 import Highlighting (WordInfo, Separators, getWords)
+import Data.Text.Read (decimal)
 
 initializeIdentifierHighlighting :: Gtk.TextBuffer -> IO ()
 initializeIdentifierHighlighting buffer = do
@@ -26,7 +28,7 @@ applyIdentifierHighlighting buffer iter separators = do
   bufferStartIter <- #getStartIter buffer
   bufferEndIter <- #getEndIter buffer
   Gtk.textBufferRemoveTagByName buffer (T.pack "IdentifierMatch") bufferStartIter bufferEndIter
-
+  
   -- Get the text around the caret
   startIter <- Gtk.textIterCopy iter
   _ <- Gtk.textIterBackwardChars startIter 1000
@@ -39,32 +41,51 @@ applyIdentifierHighlighting buffer iter separators = do
   startOffset <- Gtk.textIterGetOffset startIter
 
   -- Split the text into words and separators
-  let wordInfos = getWords surroundingText separators
+  let wordList = getWords surroundingText separators
 
   -- Find the word under the caret
-  let wordUnderCaret = findWordUnderCaret wordInfos (fromIntegral caretOffset - fromIntegral startOffset)
-
-  -- Highlight the word under the caret
+  let wordUnderCaret = findWordUnderCaret wordList (fromIntegral caretOffset - fromIntegral startOffset)
+  
   case wordUnderCaret of
-    Just (wordText, start, end) -> do
-      let startPos = start + fromIntegral startOffset
-      let endPos = end + fromIntegral startOffset + 1
-      highlightWord buffer startPos endPos
+    Just (text, _, _) -> do
+      let filteredList = filterWordListByText text wordList
+      highlightWords buffer filteredList
     Nothing -> return ()
 
   where
+    filterWordListByText :: T.Text -> [WordInfo] -> [WordInfo]
+    filterWordListByText targetText = filter (\(text, _, _) -> text == targetText)
+
+    isNumber :: T.Text -> Bool
+    isNumber text = case decimal text of
+      Right _ -> True
+      _ -> False
+
+    isSeparatorWord :: T.Text -> Bool
+    isSeparatorWord text = all (`elem` separators) (T.unpack text)
+
     findWordUnderCaret :: [WordInfo] -> Int -> Maybe WordInfo
     findWordUnderCaret [] _ = Nothing
-    findWordUnderCaret (wordInfo:rest) caretPos =
+    findWordUnderCaret (wordInfo : rest) caretPos =
       let
         (wordText, start, end) = wordInfo
       in
-        if start <= caretPos && caretPos <= end then Just wordInfo else findWordUnderCaret rest caretPos
+        if start <= caretPos && caretPos <= end then
+          if isNumber wordText || isSeparatorWord wordText then
+            Nothing -- Return Nothing if it's a number or contains only separators
+          else
+            Just wordInfo -- Return Just wordInfo otherwise
+        else
+          findWordUnderCaret rest caretPos
 
-    highlightWord :: Gtk.TextBuffer -> Int -> Int -> IO ()
-    highlightWord buffer start end = do
-      startIter <- Gtk.textBufferGetIterAtOffset buffer (fromIntegral start)
-      endIter <- Gtk.textBufferGetIterAtOffset buffer (fromIntegral end)
-      tagTable <- Gtk.textBufferGetTagTable buffer
+    highlightWords :: Gtk.TextBuffer -> [WordInfo] -> IO ()
+    highlightWords _buffer wordInfoList = do
+      tagTable <- Gtk.textBufferGetTagTable _buffer
       Just tag <- Gtk.textTagTableLookup tagTable "IdentifierMatch"
-      Gtk.textBufferApplyTag buffer tag startIter endIter
+      mapM_ (highlightWord buffer tag) wordInfoList
+
+    highlightWord :: Gtk.TextBuffer -> Gtk.TextTag -> WordInfo -> IO ()
+    highlightWord _buffer tag (_, start, end) = do
+      startIter <- Gtk.textBufferGetIterAtOffset _buffer (fromIntegral start)
+      endIter <- Gtk.textBufferGetIterAtOffset _buffer (fromIntegral end)
+      Gtk.textBufferApplyTag _buffer tag startIter endIter
