@@ -10,6 +10,9 @@ module Highlighting (
   applyRules,            -- ^ Applies the highlighting rules to the text present in the buffer, based on the provided separators.
   rules,
   separators,
+  WordInfo,
+  Separators,
+  getWords,
 ) where
 
 import Data.GI.Base

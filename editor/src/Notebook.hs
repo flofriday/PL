@@ -29,6 +29,7 @@ import qualified GI.Gtk as Gtk
 import Data.GI.Base
 import qualified Highlighting
 import qualified BraceHighlighting
+import qualified IdentifierHighlighting
 import qualified UIComponents
 
 data NotebookTab =
@@ -43,6 +44,7 @@ createAndAddTab :: Gtk.Notebook -> Text -> Gtk.TextBuffer -> Gtk.TextTagTable ->
 createAndAddTab notebook name txtBuffer tagTable = do
     -- Create text highlighting
     _ <- BraceHighlighting.initializeBraceHighlighting txtBuffer
+    _ <- IdentifierHighlighting.initializeIdentifierHighlighting txtBuffer
     _ <- Highlighting.initializeHighlighting Highlighting.rules tagTable
 
     -- Create text view.
@@ -54,10 +56,9 @@ createAndAddTab notebook name txtBuffer tagTable = do
     _ <- Gtk.on txtBuffer #changed $ do
         Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
 
-    insertMark <- #getInsert txtBuffer
-    _ <- Gtk.onTextBufferMarkSet txtBuffer $ BraceHighlighting.applyBraceHighlighting txtBuffer
-
-
+    _ <- Gtk.onTextBufferMarkSet txtBuffer $ \iter mark -> do
+        BraceHighlighting.applyBraceHighlighting txtBuffer iter mark
+        IdentifierHighlighting.applyIdentifierHighlighting txtBuffer iter Highlighting.separators
 
     -- Create notebook tab.
     tab <- tabNew (Just name) Nothing

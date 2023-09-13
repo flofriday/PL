@@ -10,7 +10,6 @@ import Data.GI.Base
 import qualified GI.Gtk as Gtk
 import qualified Data.Text as T
 import Data.Char (isSpace)
-import qualified GI.Pango as Pango
 import Control.Monad (when)
 
 initializeBraceHighlighting :: Gtk.TextBuffer -> IO ()

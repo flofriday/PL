@@ -27,6 +27,7 @@ library
   exposed-modules:
       BraceHighlighting
       Highlighting
+      IdentifierHighlighting
       Lib
       MenuBar
       MenuFileActions
