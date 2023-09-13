@@ -22,6 +22,8 @@ class Token(ABC):
 
 
 class TEOF(Token):
+    """A token representing `""`"""
+
     def literal(self) -> str:
         return ""
 
@@ -30,26 +32,36 @@ class TEOF(Token):
 
 
 class TLeftParan(Token):
+    """A token representing `(`"""
+
     def literal(self) -> str:
         return "("
 
 
 class TRightParan(Token):
+    """A token representing `)`"""
+
     def literal(self) -> str:
         return ")"
 
 
 class TTrue(Token):
+    """A token representing `true`"""
+
     def literal(self) -> str:
         return "true"
 
 
 class TFalse(Token):
+    """A token representing `false`"""
+
     def literal(self) -> str:
         return "false"
 
 
 class TIdentifier(Token):
+    """A token representing identifiers"""
+
     name: str
 
     def __init__(self, name: str, location: Location) -> None:
@@ -61,6 +73,8 @@ class TIdentifier(Token):
 
 
 class TInteger(Token):
+    """A token representing numbers"""
+
     number: int
 
     def __init__(self, number: int, location: Location) -> None:
