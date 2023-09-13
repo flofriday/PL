@@ -16,13 +16,38 @@ from environment import Environment
 
 
 class Interpreter(NodeVisitor[BuntValue]):
+    """
+    An interpreter that evaluates nodes in an abstract syntax tree (AST)
+    using the visitor pattern.
+
+    Attributes:
+        env (Environment): The environment containing variable bindings and
+        other context required for interpretation.
+    """
     def __init__(self, env: Environment):
+        """
+        Initialize a new interpreter instance.
+
+        :param env: The environment for the interpreter to operate within.
+        """
         self.env: Environment = env
 
     def exec(self, ast: AstNode) -> BuntValue:
+        """
+        Execute the given AST node and return the result.
+
+        :param ast: The AST node to execute.
+        :return: The result of executing the node.
+        """
         return ast.visit(self)
 
     def by_prog(self, node: ProgramNode) -> BuntValue:
+        """
+        Evaluate a ProgramNode by executing each of its expressions in sequence.
+
+        :param node: The ProgramNode to evaluate.
+        :return: The result of the last expression in the program.
+        """
         last_value = ListValue([])
         for expression in node.expressions:
             last_value = expression.visit(self)
@@ -30,6 +55,12 @@ class Interpreter(NodeVisitor[BuntValue]):
         return last_value
 
     def by_identifier(self, node: IdentifierNode) -> BuntValue:
+        """
+        Evaluate an IdentifierNode by looking up its value in the environment.
+
+        :param node: The IdentifierNode to evaluate.
+        :return: The value associated with the identifier in the environment.
+        """
         if node.name not in self.env:
             raise BuntError(
                 "Unknown variable",
@@ -40,6 +71,12 @@ class Interpreter(NodeVisitor[BuntValue]):
         return self.env[node.name]
 
     def by_list(self, node: ListNode) -> BuntValue:
+        """
+        Evaluate a ListNode, typically representing a function call.
+
+        :param node: The ListNode to evaluate.
+        :return: The result of evaluating the function call.
+        """
         if not node.expressions:
             raise BuntError(
                 "Missing function",
@@ -102,9 +139,21 @@ class Interpreter(NodeVisitor[BuntValue]):
         )
 
     def by_int(self, node: IntNode) -> BuntValue:
+        """
+        Evaluate an IntNode, which represents an integer literal.
+
+        :param node: The IntNode to evaluate.
+        :return: The corresponding integer value.
+        """
         return IntValue(node.value)
 
     def by_bool(self, node: BoolNode) -> BuntValue:
+        """
+        Evaluate a BoolNode, which represents a boolean literal.
+
+        :param node: The BoolNode to evaluate.
+        :return: The corresponding boolean value.
+        """
         return BoolValue(node.value)
 
     def push_env(self, env: Environment):
