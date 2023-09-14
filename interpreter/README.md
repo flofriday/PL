@@ -1,20 +1,30 @@
-# Bunt 🎨
+# Interpreter
 
-## Installation
+![Screenshot](screenshot.png)
 
-On Linux
+The interpreter for [assignment2](https://tuwel.tuwien.ac.at/pluginfile.php/3542105/mod_folder/content/0/aufgabe2.pdf)
+is written in [Python](https://www.rust-lang.org/) and only depends on pytest.
 
-```sh
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+The language for the interpreter was designed by us and is quite simple.
 
 ## The Bunt Interpreter
 
-### Usage
+The interpreter has a recurisve decent parser that generates an AST which is then interprated. It is therefore a Tree Walking Interpreter. 
+
+### Build and Run
 
 You need python 3.11 or later.
+
+```sh
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.tx
+python bunt.py
+```
+
+### Usage
+
+The interpreter will launch a REPL if no file argument is provided.
 
 ```bash
 usage: python3 bunt.py [-h] [--dump-token] [--dump-ast] [filename]
@@ -22,21 +32,23 @@ usage: python3 bunt.py [-h] [--dump-token] [--dump-ast] [filename]
 The interpreter for the bunt programming language
 
 positional arguments:
-  filename
+  filename      a file to execute
 
 options:
   -h, --help    show this help message and exit
-  --dump-token
-  --dump-ast
+  --dump-token  dump all tokens and do not execute them
+  --dump-ast    dump the ast and do not execute it
 ```
 
-## Tests
+## Testing
+
+You can run all tests with:
 
 ```sh
 pytest
 ```
 
-### Coverage Report
+And generate a coverate report with:
 
 ```sh
 coverage run -m pytest
@@ -46,13 +58,13 @@ coverage html
 
 ## Pre-commit
 
-For checks before commiting
+For checks before committing
 
 ```sh
 pre-commit install
 ```
 
-## The Bunt Programming Language
+## The Bunt Programming Language 🎨
 
 A Lisp-like language that is small enough to fulfill the requirements.
 
@@ -72,7 +84,7 @@ We use S-Expressions, for which Lisp is known:
 (+ 2 4)
 ```
 
-In Lisp, there is no point before the operator; the programmer has to specify the order with parentheses.
+In Lisp, there is no point before line, the programmer has to specify the order with parentheses.
 
 ```lisp
 # Equal to (3 + 5) * 7 in mathematics
@@ -97,7 +109,7 @@ Functions on lists always take the list last:
 ### Conditions
 
 ```lisp
-# x will be 18 but
+# x will be 18 
 (print (if (> 3 2) 18 17)))
 ```
 
@@ -135,4 +147,4 @@ Maybe, with defun in the future or just with let and lambda.
 - Arithmetic functions: +,-,*,/,%
 - Comparisons: <, >, =, <=, >=, and, or, not
 - IO: print, println
-- Lists: take, pop, +
+- Lists: head, init, tail, last, drop, +

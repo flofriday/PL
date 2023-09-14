@@ -12,8 +12,7 @@ bug-reports:    https://github.com/flofriday/PL/issues
 author:         ...
 maintainer:     example@example.com
 copyright:      2023 Author name here
-license:        BSD3
-license-file:   LICENSE
+license:        MIT
 build-type:     Simple
 extra-source-files:
     README.md
