@@ -70,8 +70,9 @@ createAndAddTab notebook name txtBuffer tagTable editable = do
         Highlighting.applyRules Highlighting.rules Highlighting.separators txtBuffer
         ErrorHighlighting.checkSyntax txtBuffer
 
-    insertMark <- #getInsert txtBuffer
-    _ <- Gtk.onTextBufferMarkSet txtBuffer $ BraceHighlighting.applyBraceHighlighting txtBuffer
+    _ <- Gtk.onTextBufferMarkSet txtBuffer $ \iter mark -> do
+        BraceHighlighting.applyBraceHighlighting txtBuffer iter mark
+        IdentifierHighlighting.applyIdentifierHighlighting txtBuffer iter Highlighting.separators
 
     -- Create notebook tab.
     tab <- tabNew (Just name) Nothing
