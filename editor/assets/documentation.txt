@@ -1,0 +1,42 @@
+# Bunt Language Syntax
+
+Bunt is a Lisp-like programming language designed for simplicity and expressiveness. Here's a quick overview of its syntax:
+
+## Expressions
+
+- Bunt uses S-expressions, where operators are enclosed in parentheses.
+- For example: `(add 2 4)` adds two numbers.
+
+## Data Types
+
+Bunt supports the following data types:
+
+- **Integers**: Represented as plain numbers, e.g., `42`.
+- **Boolean**: Represented as `true` or `false`.
+- **Lists**: Can hold various types, including functions.
+- **Functions**: Defined with parameters and return values.
+
+## Lists
+
+- Lists can be created using the `list` function, e.g., `(list 1 2 3)`.
+- Functions on lists take the list as the last argument, e.g., `(take 2 (list 1 2 3))`.
+
+## Conditions
+
+- Use `(if condition true-branch false-branch)` for conditional statements.
+- For example: `(if (> 3 2) 18 17)` returns `18`.
+
+## Lambda Functions
+
+- Anonymous functions can be created with `lambda`.
+- Example: `((lambda (a) (* a a)) 3)` squares the number `3`.
+
+## Variables
+
+- Variables are immutable and defined using `let`.
+- Example: `(let (x 42) (* x 2))` defines `x` as `42` and returns `84`.
+
+## Functions
+
+- Functions are defined using `defun` or with `let` and `lambda`.
+- Example: `(let (add (lambda (a b) (+ a b))) (add 3 7))` adds `3` and `7`.
