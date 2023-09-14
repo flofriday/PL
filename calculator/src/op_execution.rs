@@ -26,8 +26,8 @@ pub fn handle_execution_mode<IN: Read, OUT: Write>(context: &mut Calculator<IN, 
         '#' => op_stack_size(context, cmd),
         '\'' => op_read_input(context, cmd),
         '"' => op_write_output(context, cmd),
-        ' ' | '\n' | '\t' => {} // Ignore whitespace for convinience
-        invalid => panic!("RUNTIME ERROR: Invalid command character '{invalid}'"),
+        '^' => println!("{}", context.stack()),
+        _ => {} // Everything else does nothing.
     }
 }
 
@@ -39,14 +39,14 @@ fn op_digit<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) 
     context.set_op_mod(INTEGER_CONSTRUCTION_MODE);
 }
 
-fn op_dot<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_dot<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     // push 0.0 on stack
     context.stack().push(Value::Float(0.0));
     // switch to float construction mode / decimal place construction
     context.set_op_mod(DECIMAL_PLACE_CONSTRUCTION_MODE);
 }
 
-fn op_open_bracket<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_open_bracket<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     // push empty string on stack
     context.stack().push(Value::String(String::new()));
     // switch to string construction mode
@@ -230,9 +230,9 @@ fn op_negation<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char)
         .expect("RUNTIME ERROR: Nothing on stack!");
 
     let result = match val {
-        String(_) => String("".to_string()),
         Integer(n) => Integer(-n),
         Float(f) => Float(-f),
+        _ => String("".to_string()),
     };
 
     context.stack().push(result);
@@ -242,25 +242,33 @@ fn op_int_conversion<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _:
     use Value::*;
     let val = context
         .stack()
-        .pop_float()
-        .expect("RUNTIME ERROR: Float expected on stack!");
+        .pop()
+        .expect("RUNTIME ERROR: Nothing on the stack!");
 
-    let result = Integer(val as i64);
+    let result = match val {
+        Float(f) => Integer(f as i64),
+        _ => String("".to_string()),
+    };
+
     context.stack().push(result);
 }
 
 fn op_copy<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: char) {
     let len = context.stack().len() as i64;
-    let Some(Integer(val)) = context.stack().pop() else { return };
-    if val >= 1 && val <= len {
-        let index = len - val;
-        let Some(nth) = context.stack().nth((index) as usize) else { return };
-        let elem = nth.clone();
-        context.stack().push(elem);
+    let Some(Integer(val)) = context.stack().peek() else { return };
+    if val < 1 || val > len {
+        print!("Not correct range");
+        return;
     }
+
+    let index = len - val;
+    let Some(nth) = context.stack().nth((index) as usize) else { return };
+    let elem = nth.clone();
+    context.stack().pop().unwrap();
+    context.stack().push(elem);
 }
 
-fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     let len = context.stack().len() as i64;
     if let Some(Integer(val)) = context.stack().pop() {
         if val >= 1 && val <= len {
@@ -270,24 +278,24 @@ fn op_delete<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char)
     }
 }
 
-fn op_apply_imm<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_apply_imm<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     if let Some(Value::String(string_val)) = context.stack().pop() {
         context.cmd_stream().prepend(&string_val);
     }
 }
 
-fn op_apply_later<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_apply_later<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     if let Some(Value::String(string_val)) = context.stack().pop() {
         context.cmd_stream().append(&string_val);
     }
 }
 
-fn op_stack_size<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_stack_size<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     let size = context.stack().len();
     context.stack().push(Value::Integer(size as i64));
 }
 
-fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: char) {
+fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _cmd: char) {
     let value = match context.in_stream().poll() {
         Ok(value) => value,
         Err(_) => {
@@ -296,8 +304,8 @@ fn op_read_input<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, cmd: c
         }
     };
     match value {
-        Value::Integer(int_val) => context.stack().push(value),
-        Value::Float(float_val) => context.stack().push(value),
+        Value::Integer(_) => context.stack().push(value),
+        Value::Float(_) => context.stack().push(value),
         Value::String(string_val) => {
             // is_well_formed logic
             // string cannot be well formed if it doesn't start with an (
@@ -337,11 +345,7 @@ fn op_write_output<IN: Read, OUT: Write>(context: &mut Calculator<IN, OUT>, _: c
         return;
     };
 
-    match val {
-        Value::Float(v) => println!("{v}"),
-        Value::Integer(v) => println!("{v}"),
-        Value::String(v) => println!("{v}"),
-    }
+    context.out_stream().write(&val).unwrap();
 }
 
 #[cfg(test)]
@@ -453,14 +457,14 @@ mod tests {
         let test_input = String::from("4 2/");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Float(2.0)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
     }
     #[test]
     fn test_division_with_negatives() {
         let test_input = String::from("4 2~/");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Float(-2.0)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(-2)));
     }
 
     #[test]
@@ -714,10 +718,10 @@ mod tests {
     }
     #[test]
     fn test_op_copy_2() {
-        let test_input = String::from("1 2 1!");
+        let test_input = String::from("3 1 2!");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]

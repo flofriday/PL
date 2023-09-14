@@ -50,7 +50,7 @@ impl Div for Value {
 
     fn div(self, other: Value) -> Value {
         match (self, other) {
-            (Value::Integer(a), Value::Integer(b)) => Value::Float((a as f64) / (b as f64)),
+            (Value::Integer(a), Value::Integer(b)) => Value::Integer(a / b),
             (Value::Float(a), Value::Float(b)) => Value::Float(a / b),
             _ => panic!("Invalid arithmetic operation"),
         }

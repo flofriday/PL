@@ -112,6 +112,6 @@ class TestBuiltinArithmetic(unittest.TestCase):
         assert isinstance(result, IntValue)
         assert result.value == 0
 
+
 if __name__ == "__main__":
     unittest.main()
-

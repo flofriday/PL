@@ -26,6 +26,7 @@ impl DataStack {
         self.values.pop()
     }
 
+    #[allow(dead_code)]
     /// Return the top entry without popping it
     pub fn peek(&mut self) -> Option<Value> {
         self.values.last().cloned()

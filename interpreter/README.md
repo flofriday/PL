@@ -1,4 +1,14 @@
-root at ☁️ 522f16a94f10 in /workspaces/PermaplanT on 210-complete-seed-overview# Bunt 🎨
+# Bunt 🎨
+
+## Installation
+
+On Linux
+
+```sh
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## The Bunt Interpreter
 
@@ -18,6 +28,28 @@ options:
   -h, --help    show this help message and exit
   --dump-token
   --dump-ast
+```
+
+## Tests
+
+```sh
+pytest
+```
+
+### Coverage Report
+
+```sh
+coverage run -m pytest
+coverage report -m
+coverage html
+```
+
+## Pre-commit
+
+For checks before commiting
+
+```sh
+pre-commit install
 ```
 
 ## The Bunt Programming Language
@@ -104,17 +136,3 @@ Maybe, with defun in the future or just with let and lambda.
 - Comparisons: <, >, =, <=, >=, and, or, not
 - IO: print, println
 - Lists: take, pop, +
-
-## Tests
-
-```sh
-root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ pytest
-```
-
-### Coverage Report
-
-```sh
-root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage run -m pytest
-root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage report -m
-root at ☁️ 522f16a94f10 in /workspaces/PL/interpreter $ coverage html
-```

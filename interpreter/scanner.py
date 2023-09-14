@@ -1,6 +1,15 @@
 from dataclasses import dataclass
 from bunt_error import BuntError
-from bunt_token import TEOF, TIdentifier, TInteger, TLeftParan, Token, TRightParan, TTrue, TFalse
+from bunt_token import (
+    TEOF,
+    TIdentifier,
+    TInteger,
+    TLeftParan,
+    Token,
+    TRightParan,
+    TTrue,
+    TFalse,
+)
 from location import Location
 from typing import List, Optional, Callable
 
@@ -14,18 +23,20 @@ class ScanPos:
     :param line: The line of the position (starting at 1)
     :param col: The column of the position (starting at 1)
     """
+
     line: int
     col: int
 
 
 class Scanner:
     """The scanner (aka. lexer) splits the input text into tokens."""
+
     def __init__(self, input: str) -> None:
         self._input = input
         self._pos = 0
         self._readpos = 0
         self._curr_char: Optional[chr] = None
-        self._curr_loc =  ScanPos(1, 0)
+        self._curr_loc = ScanPos(1, 0)
         self._read_char()
 
     def scan(self) -> List[Token]:
@@ -115,11 +126,11 @@ class Scanner:
 
     def _read_identifier(self) -> str:
         """Reads an identifier or fails if it is an invalid identifier.
-       Note: self._curr_char must be a valid identifier start at the time of calling.
+        Note: self._curr_char must be a valid identifier start at the time of calling.
 
-       :raises BuntError: If the identifier is invalid.
-       :return: The parsed identifier.
-       """
+        :raises BuntError: If the identifier is invalid.
+        :return: The parsed identifier.
+        """
 
         curr_location = ScanPos(line=self._curr_loc.line, col=self._curr_loc.col)
         lit = self._read_while(_is_valid_identifier_part)
