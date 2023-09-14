@@ -47,7 +47,9 @@ impl<W: Write> OutputStream<W> {
     /// output_stream.write(&Value::String("Hello, world!".to_string())).unwrap();
     /// ```
     pub fn write(&mut self, value: &Value) -> Result<(), io::Error> {
-        write!(self.writer, "{}", Self::val_to_string(value))
+        let err = write!(self.writer, "{}", Self::val_to_string(value));
+        self.writer.flush().unwrap();
+        err
     }
 
     /// Writes a `Value` to the wrapped writer, appending a newline character.

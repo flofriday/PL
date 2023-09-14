@@ -1,4 +1,6 @@
+(// Showcases a simple if-else example )1$
+
 ((Old enough)") T
 ((Too young)") F
-(Enter your age:)"
+(Enter your age: )"
 f t ' 17 > 1+ $ @

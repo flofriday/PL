@@ -64,6 +64,7 @@ impl CmdStream {
         self.commands.rotate_right(commands.len())
     }
 
+    #[allow(dead_code)]
     /// Returns the next command without removing it from the stream.
     ///
     /// If there is no command in the stream, it returns None.

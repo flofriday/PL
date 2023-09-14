@@ -40,7 +40,7 @@ def let_builtin(args, interpreter):
     The `let` expression allows to bind values to variables that can be used in
     its inner expressions.
 
-    Throws `BuntError` if let structure is invalid or variable was already bound.
+    :raises `BuntError` if let structure is invalid or variable was already bound.
 
     :param args: the variable bindings (arg[0]) and subsequent expressions (arg[1:])
     :param interpreter: the currently executing interpreter
@@ -115,7 +115,7 @@ def lambda_builtin(args, interpreter):
 
     The `lambda` expression allows to define lambda functions with zero or more parameters.
 
-    Throws `BuntError` if params are not identifiers.
+    :raises `BuntError` if params are not identifiers.
 
     :param args: the param list (arg[0]) and lambda expression definition (arg[1])
     :param interpreter: the currently executing interpreter
@@ -146,7 +146,27 @@ def lambda_builtin(args, interpreter):
     )
 
 
+
 def defun_builtin(args, interpreter):
+    """
+   `defun <name> ([<param>] ...) <expr>`
+
+   The `defun` expression allows the user to define named functions at the global scope level.
+   These functions can have zero or more parameters.
+
+   :raises `BuntError`:
+       - if the method is not called within the global scope
+       - if the function name is not an identifier
+       - if the parameters are not identifiers
+
+   :param args:
+       - args[0]: the function name
+       - args[1]: the param list
+       - args[2]: the function body expression
+
+   :param interpreter: the currently executing interpreter
+   :return: the function value after being defined in the interpreter's environment
+   """
     if not interpreter.env.is_global():
         raise BuntError(
             header="Invalid Scope",
@@ -194,7 +214,18 @@ def defun_builtin(args, interpreter):
 #####################################
 #        ARITHMETIC OPERATOR        #
 #####################################
-def plus_builtin(ast_args: list[AstNode], interpreter):
+def plus_builtin(ast_args: list[AstNode], interpreter) -> ListValue | IntValue:
+    """
+    `(+ a b)`
+
+    The `+` allows us to add two values together.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue` or `ListValues`s to add
+    :param interpreter: the currently executing interpreter
+    :return: a `ListValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -212,7 +243,18 @@ def plus_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def minus_builtin(ast_args: list[AstNode], interpreter):
+def minus_builtin(ast_args: list[AstNode], interpreter) -> IntValue:
+    """
+    `(- a b)`
+
+    The `-` allows us to subtract two values together.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to subtract
+    :param interpreter: the currently executing interpreter
+    :return: a `ListValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -226,7 +268,18 @@ def minus_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def times_builtin(ast_args: list[AstNode], interpreter):
+def times_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(* a b)`
+
+    The `*` allows us to multiply two values.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to multiply
+    :param interpreter: the currently executing interpreter
+    :return: an `IntValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -240,7 +293,18 @@ def times_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def divide_builtin(ast_args: list[AstNode], interpreter):
+def divide_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(/ a b)`
+
+    The `/` allows us to divide two values.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to divide
+    :param interpreter: the currently executing interpreter
+    :return: an `IntValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -254,7 +318,18 @@ def divide_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def modulo_builtin(ast_args: list[AstNode], interpreter):
+def modulo_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(% a b)`
+
+    The `%` allows us to us to perform a % b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to modulo
+    :param interpreter: the currently executing interpreter
+    :return: an `IntValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -273,12 +348,34 @@ def modulo_builtin(ast_args: list[AstNode], interpreter):
 #####################################
 
 
-def equality_builtin(ast_args: list[AstNode], interpreter):
+def equality_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(= a b)`
+
+    The `=` allows us to check if a = b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `BuntValue`s to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     return BoolValue(args[0] == args[1])
 
 
-def greater_than_builtin(ast_args: list[AstNode], interpreter):
+def greater_than_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(> a b)`
+
+    The `>` allows us to check if a > b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -292,7 +389,18 @@ def greater_than_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
+def greater_equal_than_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(>= a b)`
+
+    The `>=` allows us to check if a >= b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -306,7 +414,18 @@ def greater_equal_than_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def less_than_builtin(ast_args: list[AstNode], interpreter):
+def less_than_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(< a b)`
+
+    The `<` allows us to check if a < b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -320,7 +439,18 @@ def less_than_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def less_equal_than_builtin(ast_args: list[AstNode], interpreter):
+def less_equal_than_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(<= a b)`
+
+    The `<=` allows us to check if a < b.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the `IntValue`s to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], IntValue):
         a: IntValue = args[0]
@@ -339,7 +469,18 @@ def less_equal_than_builtin(ast_args: list[AstNode], interpreter):
 #####################################
 
 
-def not_builtin(ast_args: list[AstNode], interpreter):
+def not_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(not a)`
+
+    The `not` allows us to negate a `BoolValue`.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the arguments to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], BoolValue):
         a: BoolValue = args[0]
@@ -352,7 +493,18 @@ def not_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def or_builtin(ast_args: list[AstNode], interpreter):
+def or_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(or a b)`
+
+    The `or` allows us to perform a logical or on two `BoolValue`s.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the arguments to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], BoolValue) and isinstance(args[1], BoolValue):
         a: BoolValue = args[0]
@@ -366,7 +518,18 @@ def or_builtin(ast_args: list[AstNode], interpreter):
         )
 
 
-def and_builtin(ast_args: list[AstNode], interpreter):
+def and_builtin(ast_args: list[AstNode], interpreter) -> BoolValue:
+    """
+    `(and a b)`
+
+    The `and` allows us to perform a logical and on two `BoolValue`s.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the arguments to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return: an `BoolValue` with the result
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], BoolValue) and isinstance(args[1], BoolValue):
         a: BoolValue = args[0]
@@ -381,6 +544,17 @@ def and_builtin(ast_args: list[AstNode], interpreter):
 
 
 def if_builtin(ast_args: list[AstNode], interpreter):
+    """
+    `(if true a b)`
+
+    The `if` allows us to guard an expression.
+
+    :raises `BuntError` if an operand is invalid.
+
+    :param ast_args: the arguments to perform the operation
+    :param interpreter: the currently executing interpreter
+    :return:
+    """
     condition = ast_args[0].visit(interpreter)
     if not isinstance(condition, BoolValue):
         _invalid_operand_error(
@@ -394,51 +568,89 @@ def if_builtin(ast_args: list[AstNode], interpreter):
         return ast_args[2].visit(interpreter)
 
 
-def list_builtin(ast_args: list[AstNode], interpreter):
+#####################################
+#         LIST OPERATOR            #
+#####################################
+
+
+
+def list_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Convert AST nodes into a list value.
+    :param ast_args: A list of AST nodes.
+    :param interpreter: The currently executing interpreter.
+    :return: A ListValue containing the evaluated AST nodes.
+    """
     return ListValue(_eval_args(ast_args, interpreter))
 
 
 def take_builtin(ast_args: list[AstNode], interpreter):
+    """
+    Extract an element from a list at a given index.
+
+    Expects the first argument to be an integer (index) and the second to be a list.
+
+    :raises `BuntError`: if the index is out of bounds.
+    :param ast_args: A list containing the index and the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: Element at the given index from the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
-    if a.value >= len(b.value) or a.value < 0:
-        raise BuntError(
-            header="Invalid Index",
-            message=f"index {a.value} is not present in the list",
-            tip="Use the len function to check the length of the list",
-        )
+        if a.value >= len(b.value) or a.value < 0:
+            raise BuntError(
+                header="Invalid Index",
+                message=f"index {a.value} is not present in the list",
+                tip="Use the len function to check the length of the list",
+            )
+        return b.value[a.value]
     else:
         _invalid_operand_error(
             msg="Expected first operand to be an integer and second operand to be a list",
             tip="Usage `(take 0 (list 1))`",
             location=args[0].location(),
         )
-    return b.value[a.value]
-
 
 def drop_builtin(ast_args: list[AstNode], interpreter):
+    """
+    Drop the initial elements up to the specified index and return the rest.
+
+    Expects the first argument to be an integer (index) and the second to be a list.
+
+    :param ast_args: A list containing the index and the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue starting from the index to the end of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], IntValue) and isinstance(args[1], ListValue):
         a: IntValue = args[0]
         b: ListValue = args[1]
-    if a.value < 0:
-        raise BuntError(
-            header="Invalid Index",
-            message=f"index {a.value} should not be below 0",
-            tip="Use a positive number as first arg",
-        )
+        if a.value < 0:
+            raise BuntError(
+                header="Invalid Index",
+                message=f"index {a.value} should not be below 0",
+                tip="Use a positive number as first arg",
+            )
     else:
         _invalid_operand_error(
             msg="Expected first operand to be an integer and second operand to be a list",
             tip="Usage `(drop 0 (list 1))`",
             location=args[0].location(),
         )
-    return ListValue(b.value[a.value :])
+    return ListValue(b.value[a.value :])  # noqa: E203
 
 
-def len_builtin(ast_args: list[AstNode], interpreter):
+def len_builtin(ast_args: list[AstNode], interpreter) -> IntValue:
+    """
+    Compute the length of a given list.
+
+    :raises `BuntError`: if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: Integer value representing the length of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if not isinstance(args[0], ListValue):
         _invalid_operand_error(
@@ -451,7 +663,15 @@ def len_builtin(ast_args: list[AstNode], interpreter):
     return IntValue(len(ls.value))
 
 
-def head_builtin(ast_args: list[AstNode], interpreter):
+def head_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve the first element of a given list.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: The first element of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -470,7 +690,15 @@ def head_builtin(ast_args: list[AstNode], interpreter):
     return a.value[0]
 
 
-def last_builtin(ast_args: list[AstNode], interpreter):
+def last_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve the last element of a given list.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: The last element of the list.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -489,7 +717,15 @@ def last_builtin(ast_args: list[AstNode], interpreter):
     return a.value[-1]
 
 
-def tail_builtin(ast_args: list[AstNode], interpreter):
+def tail_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve all elements of a list except the first one.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue containing all elements except the first one.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -508,7 +744,15 @@ def tail_builtin(ast_args: list[AstNode], interpreter):
     return ListValue(a.value[1:])
 
 
-def init_builtin(ast_args: list[AstNode], interpreter):
+def init_builtin(ast_args: list[AstNode], interpreter) -> BuntValue:
+    """
+    Retrieve all elements of a list except the last one.
+
+    :raises `BuntError`: if the list is empty or if the argument is not a list.
+    :param ast_args: A list containing the target list.
+    :param interpreter: The currently executing interpreter.
+    :return: ListValue containing all elements except the last one.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     if isinstance(args[0], ListValue):
         a: ListValue = args[0]
@@ -524,22 +768,36 @@ def init_builtin(ast_args: list[AstNode], interpreter):
             tip="Usage `(last (list 1))`",
             location=args[0].location(),
         )
-    return a.value[0:-1]
+    return ListValue(a.value[0:-1])
 
 
-def print_builtin(ast_args: list[AstNode], interpreter):
+def print_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Print the first argument without a newline at the end.
+
+    :param ast_args: A list containing the argument to print.
+    :param interpreter: The currently executing interpreter.
+    :return: An empty ListValue.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     print(args[0])
     return ListValue([])
 
 
-def println_builtin(ast_args: list[AstNode], interpreter):
+def println_builtin(ast_args: list[AstNode], interpreter) -> ListValue:
+    """
+    Print the first argument with a newline at the end.
+
+    :param ast_args: A list containing the argument to print.
+    :param interpreter: The currently executing interpreter.
+    :return: An empty ListValue.
+    """
     args: list[BuntValue] = _eval_args(ast_args, interpreter)
     print(args[0], end="\n")
     return ListValue([])
 
 
-def _eval_args(args: list[AstNode], interpreter) -> list[BuntValue]:
+def _eval_args(args: list[AstNode], interpreter):
     return [e.visit(interpreter) for e in args]
 
 

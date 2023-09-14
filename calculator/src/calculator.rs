@@ -41,6 +41,7 @@ impl Calculator<io::Stdin, io::Stdout> {
 }
 
 impl<IN: Read, OUT: Write> Calculator<IN, OUT> {
+    #[allow(dead_code)]
     pub fn from(program: &str, reader: BufReader<IN>, writer: OUT) -> Self {
         Self {
             op_mode: 0,

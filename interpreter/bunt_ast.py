@@ -43,6 +43,7 @@ class AstNode(ABC):
 
 class ExpressionNode(AstNode):
     """A abstract node representing an expression."""
+
     pass
 
 
@@ -51,6 +52,7 @@ class ProgramNode(AstNode):
 
     :param expressions: The expressions that make up the program.
     """
+
     def __init__(self, expressions: list[ExpressionNode]):
         self.expressions = expressions
 
