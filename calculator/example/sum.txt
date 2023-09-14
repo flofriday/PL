@@ -1,3 +1,17 @@
 (// a stackless endless loop)1$
-(3! 4! 1"  @)  2!  @
+(// (3! 4! 1"  @)  2!  @)1$
 
+(// Put som data to add on the stack )1$
+40 41 42 43 44 45
+
+(// In a loop add them all up )1$
+(
+    (2$)                            (// Exit loop and delete it from the stack)1$
+    (#1+! #$  + 3!@)                (// The loop body to add it all up)1$   
+    # 4 > 1+$ @                     (// Exit condition )1$
+)   
+    0                               (// The counter)1$
+    3! @                            (// Start the loop)1$
+
+(// Print the result (should be 255) )1$
+"

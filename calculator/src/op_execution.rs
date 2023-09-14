@@ -26,6 +26,7 @@ pub fn handle_execution_mode<IN: Read, OUT: Write>(context: &mut Calculator<IN, 
         '#' => op_stack_size(context, cmd),
         '\'' => op_read_input(context, cmd),
         '"' => op_write_output(context, cmd),
+        '^' => println!("{}", context.stack()),
         _ => {} // Everything else does nothing.
     }
 }
