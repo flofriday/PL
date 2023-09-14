@@ -457,14 +457,14 @@ mod tests {
         let test_input = String::from("4 2/");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Float(2.0)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
     }
     #[test]
     fn test_division_with_negatives() {
         let test_input = String::from("4 2~/");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Float(-2.0)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(-2)));
     }
 
     #[test]
@@ -718,10 +718,10 @@ mod tests {
     }
     #[test]
     fn test_op_copy_2() {
-        let test_input = String::from("1 2 1!");
+        let test_input = String::from("3 1 2!");
         let mut calc: Calculator<io::Stdin, io::Stdout> = Calculator::new(&test_input);
         calc.run();
-        assert_eq!(calc.stack().peek(), Some(Value::Integer(2)));
+        assert_eq!(calc.stack().peek(), Some(Value::Integer(1)));
     }
 
     #[test]
