@@ -135,11 +135,18 @@ Variables are immutable and cannot be reassigned. You can create them with let w
 
 ### Functions
 
-Maybe, with defun in the future or just with let and lambda.
+You can create local named functions with `let` and `lambda`.
 
 ```lisp
 (let (add (lambda (a b) (+ a b))
     (print (add 3 7)))
+```
+
+It is also possibly to define them globally with `defun`.
+
+```lisp
+(defun mul (a b) (* a b))
+(print (mul 2 3)) 
 ```
 
 ### Builtin functions
