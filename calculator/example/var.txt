@@ -1,0 +1,64 @@
+(// Put som data to add on the stack )1$
+40.0 41.0 42.0 43.0 44.0 45.0
+
+(// 1. Calc the mean)1$
+(// Put the initial size on the stack )1$
+#
+
+(// In a loop add them all up )1$
+(
+    (3$2$) 
+    (
+        # 4! - 2+!
+        +
+        3!3$
+        1-
+        3!3$
+
+        4!@
+        
+    ) 
+    5! 0 > 1+$ @
+
+    
+) 
+
+# 2-
+0
+4! @
+
+(// Swap the sum and the length and divide)1$
+3!3$
+/
+
+
+(// 2. Calc the mean)1$
+# 2-
+
+(
+    ()
+    (
+       #1+! 
+       #$
+
+       4!
+       -
+
+       2! *
+       +
+
+       4!@
+    )
+    # 6 > 1+$ @
+
+)
+4!4$
+0 
+4!@
+
+2$2$
+
+3!3$
+/
+
+"
