@@ -6,9 +6,6 @@ on:
             - 'interpreter/**'
             - '.github/workflows/interpreter.yml'
     pull_request:
-        paths:
-            - 'interpreter/**'
-            - '.github/workflows/interpreter.yml'
         branches: [ main ]
 
 jobs:
